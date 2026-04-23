@@ -704,6 +704,18 @@ function ChatScene({ onComplete }) {
       }} />
 
       <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        display: 'flex', justifyContent: 'center', padding: '22px 0',
+        zIndex: 10, pointerEvents: 'none',
+      }}>
+        <span style={{
+          fontFamily: T.serif || T.sans, fontWeight: 700, fontSize: 22,
+          color: 'rgba(255,255,255,.92)', letterSpacing: '.04em',
+          textShadow: '0 2px 12px rgba(0,0,0,.2)',
+        }}>Welcome to the party!</span>
+      </div>
+
+      <div style={{
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 72, padding: '60px 80px',
@@ -726,18 +738,7 @@ function ChatScene({ onComplete }) {
             filter: 'drop-shadow(0 30px 60px rgba(0,0,0,.25))',
             animation: 'flo-float 6s ease-in-out infinite',
           }} />
-          <div style={{
-            position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)',
-            padding: '7px 16px 7px 7px', display: 'flex', alignItems: 'center', gap: 9,
-            background: 'rgba(255,255,255,.25)',
-            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-            borderRadius: 9999, border: '1px solid rgba(255,255,255,.4)',
-            boxShadow: '0 8px 20px rgba(0,0,0,.15)',
-          }}>
-            <AvaPortrait size={28} />
-            <span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 14, color: '#fff' }}>Ava</span>
-            <div style={{ width: 7, height: 7, borderRadius: 9999, background: T.success }} />
-          </div>
+
         </div>
 
         {/* RIGHT — chat panel */}
