@@ -41,8 +41,8 @@ window.QUESTIONS = [
     id: 'name',
     kind: 'text',
     ava: [
-      "So glad you're here — I've been looking forward to this.",
-      "First things first, what's your name?",
+      "You're on the list. So glad you're here.",
+      "I'm Ava — I'm hosting tonight. What's your name?",
     ],
     placeholder: 'your name',
   },

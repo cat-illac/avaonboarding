@@ -1351,6 +1351,16 @@ function PartyScene({ profile = {}, onRestart, onGoCustomize, onRestartWithAva }
         >↺ Restart the night</button>
       </div>
 
+      {/* PANEL BACKDROP — dims scene and closes panel on click */}
+      {activePanel && (
+        <div onClick={() => setActivePanel(null)} style={{
+          position: 'absolute', inset: 0, zIndex: 19,
+          background: 'rgba(0,0,0,.35)',
+          backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)',
+          animation: 'flo-fade-in .2s ease both',
+        }} />
+      )}
+
       {/* NAV PANELS */}
       {activePanel === 'music'  && <MusicPanel  onClose={() => setActivePanel(null)} />}
       {activePanel === 'travel' && <TravelPanel onClose={() => setActivePanel(null)} />}
@@ -1990,7 +2000,7 @@ function SceneJumper({ scene, onJump }) {
 function App() {
   const [scene, setScene] = useState(() => {
     if (window.SKIP_TO) return window.SKIP_TO;
-    try { return localStorage.getItem('avakin:scene') || 'welcome'; } catch { return 'welcome'; }
+    try { return localStorage.getItem('avakin:scene') || 'chat'; } catch { return 'chat'; }
   });
   const [profile, setProfile] = useState(() => {
     try { return JSON.parse(localStorage.getItem('avakin:profile') || '{}'); } catch { return {}; }
@@ -2025,7 +2035,7 @@ function App() {
       {scene === 'party'     && <PartyScene    profile={profile}
         onRestart={() => {
           try { localStorage.removeItem('avakin:scene'); localStorage.removeItem('avakin:profile'); } catch {}
-          setProfile({}); go('welcome');
+          setProfile({}); go('chat');
         }}
         onGoCustomize={() => goCustomize('party')}
         onRestartWithAva={() => {
