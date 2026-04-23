@@ -116,10 +116,26 @@ async function generateFalAvatar(profile, customPrompt = '') {
   // key is optional — if absent the call routes through /.netlify/functions/generate-avatar
   const key = window.FAL_API_KEY || '';
 
-  // ── Identity & vibe (question: presents + feel + song) ──────────
+  // ── Gender ───────────────────────────────────────────────────────
   const genderMap = { 'Female': 'young woman', 'Male': 'young man', 'Non-binary': 'person', 'surprise me': 'person' };
   const gender = genderMap[profile.presents] || 'young woman';
 
+  // ── Identity — the PRIMARY creative brief ────────────────────────
+  // This must lead the prompt so the model treats it as the headline concept.
+  const identityCore = profile.identity
+    ? `A fashion avatar that fully embodies the concept of "${profile.identity}". Every element — the outfit, styling, accessories, colour palette, and mood — must express "${profile.identity}" from head to toe.`
+    : `A high-fashion CGI avatar.`;
+
+  // ── Era → silhouette + material language ────────────────────────
+  const eraMap = {
+    'Victorian':         'Victorian era silhouette — corseted or high-waisted, voluminous skirts or structured layers, rich velvet and silk fabrics, ornate lace and embroidery details, jewel tones and deep burgundy with gilded accents',
+    'the 90s':           'minimalist 1990s silhouette — slip dresses, sharp tailored separates, muted palette with occasional colour pop, clean lines and considered simplicity',
+    'Y2K':               'Y2K futuristic silhouette — iridescent holographic pleats, glossy synthetic fabrics, white and pastel holographic palette with metallic gold accents, playful and bold proportions',
+    '10 years from now': 'avant-garde near-future silhouette — technical luxury fabrics, architectural sculptural shapes, clean neutral palette with luminous metallic and light-reactive accents',
+  };
+  const eraStyle = eraMap[profile.era] || '';
+
+  // ── Feel → social energy ─────────────────────────────────────────
   const vibeMap = {
     'intrigued':         'magnetic and quietly compelling, high social intrigue, refined cool-girl energy',
     'charmed':           'warm and captivating, effortlessly charming, golden-hour glow energy',
@@ -129,19 +145,16 @@ async function generateFalAvatar(profile, customPrompt = '') {
   const vibe = vibeMap[profile.feel] || 'confident and aspirational';
   const songRef = profile.song ? ` The overall feeling should echo the energy of "${profile.song}".` : '';
 
-  // ── Identity text (free-form, from question 2) ──────────────────
-  const identityText = profile.identity ? ` They embody: ${profile.identity}.` : '';
-
-  // ── Hair & eyes from appearance picker ──────────────────────────
+  // ── Hair & eyes ──────────────────────────────────────────────────
   const hairDesc = profile.hair ? `${profile.hair} hair` : 'blonde hair';
   const eyesDesc = profile.eyes ? `${profile.eyes} eyes` : 'blue eyes';
 
-  // ── Assemble structured prompt (PDF section order) ───────────────
-  const identityVibe     = `Identity and vibe: a polished, socially magnetic ${gender} with ${vibe}; confident, desirable, youthful, premium, and aspirational; cute-but-cool rather than aggressive, with a high-status fashion presence.${identityText}${songRef}`;
-  const bodyFaceHair     = `Body, face, and hair: full-body ${gender} avatar with elegant long fashion-avatar proportions, slim build, refined doll-like facial features, luminous skin, large expressive ${eyesDesc}, small nose, glossy full lips, soft blush, and ${hairDesc} styled to perfection.`;
-  const outfitSilhouette = `Outfit silhouette: high-fashion contemporary silhouette with editorial flair, statement volume and considered proportions.`;
-  const materials        = `Materials and colour: high-quality luxury materials, iridescent or textured finishes, crisp material separation, premium palette with warm accent highlights.`;
-  const accessories      = `Accessories and footwear: gold hoop earrings, futuristic choker collar detail, small structured handbag, chunky premium fashion sneakers with metallic accents, sport-luxury styling.`;
+  // ── Assemble prompt — identity leads, everything else supports ───
+  const identityVibe     = `Character concept: ${gender} with ${vibe} energy.${songRef}`;
+  const bodyFaceHair     = `Body, face, and hair: full-body ${gender} with elegant fashion-avatar proportions, slim build, refined doll-like facial features, luminous skin, large expressive ${eyesDesc}, small nose, glossy full lips, soft blush, and ${hairDesc} styled to match the overall concept.`;
+  const outfitSilhouette = `Outfit silhouette: ${profile.identity ? `the garments must visually express "${profile.identity}"` : 'high-fashion editorial'}${eraStyle ? '; ' + eraStyle : ''}. The entire look — silhouette, styling, accessories and footwear — should reinforce the identity concept.`;
+  const materials        = `Materials and colour: ${profile.identity ? `materials, textures, and colour palette chosen specifically to express "${profile.identity}"` : 'high-quality luxury materials, iridescent or textured finishes, premium palette'}${eraStyle ? ', appropriate to the chosen era' : ''}.`;
+  const accessories      = `Accessories and footwear: ${profile.identity ? `accessories and footwear that complete and reinforce the "${profile.identity}" concept` : 'complementary accessories and fashion footwear suited to the look'}.`;
   const pose        = `Pose: ALWAYS full-body head-to-toe, complete figure visible from crown to feet, no cropping. Full-body editorial pose, relaxed and self-aware, one leg lightly crossing in front of the other, calm confidence, composed fashion attitude. The entire body including footwear MUST be visible in the frame.`;
   const renderStyle = `Render style: MUST be high-end beauty CGI. Clean contour definition, subtle line emphasis around forms, airbrushed realism, smooth polished skin, controlled highlights, sharp garment construction, premium stylised 3D finish, collectible avatar appeal, minimal luxury studio background. This is a polished 3D CGI render — not illustration, not photography, not painting.`;
   const customPart  = customPrompt ? ` Additional styling notes: ${customPrompt}.` : '';
@@ -151,7 +164,8 @@ async function generateFalAvatar(profile, customPrompt = '') {
   const negativeText  = `not painterly, not brushy, not sketch-like, no visible paint texture, no concept art looseness, no messy shading, no rough render, no broken anatomy, no distorted hands, no malformed footwear, no cropped figure, no cut-off legs, no missing feet`;
   const negativeInPrompt = `Negative constraints: ${negativeText}.`;
 
-  const prompt = `Create an original fashion avatar as a stylised CGI full length character render. ${identityVibe} ${bodyFaceHair} ${outfitSilhouette} ${materials} ${accessories} ${pose} ${renderStyle}${customPart} ${negativeInPrompt}`;
+  // Identity leads the prompt — FLUX schnell weights the opening most heavily.
+  const prompt = `${identityCore} Full-length stylised CGI fashion avatar render. ${identityVibe} ${bodyFaceHair} ${outfitSilhouette} ${materials} ${accessories} ${pose} ${renderStyle}${customPart} ${negativeInPrompt}`;
 
   // Route through the Netlify serverless proxy so the key stays server-side.
   // Falls back to direct fal.run if a client key is present (local dev only).

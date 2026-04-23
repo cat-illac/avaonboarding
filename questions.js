@@ -65,11 +65,26 @@ window.QUESTIONS = [
     placeholder: 'a song, an artist, a vibe',
   },
   {
-    id: 'feel',
+    id: 'era',
     kind: 'choice',
     ava: () => [
-      "Perfect. Now this is the fun part.",
-      "When you walk into a room, how do you want people to feel?",
+      "Love it. Now let's talk aesthetic.",
+      "Which of these worlds feels most like you?",
+    ],
+    options: [
+      { v: 'Victorian',         emoji: '🕯️' },
+      { v: 'the 90s',           emoji: '📼' },
+      { v: 'Y2K',               emoji: '💿' },
+      { v: '10 years from now', emoji: '🛸' },
+    ],
+    writeIn: 'or describe your own era',
+  },
+  {
+    id: 'feel',
+    kind: 'choice',
+    ava: (v) => [
+      `${v === '10 years from now' ? 'Ahead of the curve' : v[0].toUpperCase() + v.slice(1)} — nice.`,
+      "And when you walk into a room, how do you want people to feel?",
     ],
     options: [
       { v: 'intrigued',      emoji: '👀' },
