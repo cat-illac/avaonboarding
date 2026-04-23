@@ -354,15 +354,15 @@
       '<div class="loading"><div class="spinner"></div><br>Loading sessions…</div>';
 
     const res = await fetch(`/.netlify/functions/get-sessions?key=${encodeURIComponent(adminKey)}`);
-
-    if (res.status === 401) {
-      document.getElementById('auth-error').textContent = 'Incorrect key — try again.';
-      return;
-    }
+    const errEl = document.getElementById('auth-error');
 
     if (!res.ok) {
-      document.getElementById('sessions-container').innerHTML =
-        '<div class="empty"><p>Failed to load sessions.</p><small>Check the browser console for details.</small></div>';
+      let msg = `Error ${res.status}`;
+      try {
+        const body = await res.json();
+        msg = body.error || msg;
+      } catch {}
+      errEl.textContent = res.status === 401 ? 'Incorrect key — try again.' : msg;
       return;
     }
 

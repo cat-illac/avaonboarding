@@ -9,10 +9,15 @@ exports.handler = async (event) => {
     'Access-Control-Allow-Origin': '*',
   };
 
-  const adminKey = process.env.ADMIN_KEY || '';
+  const adminKey = (process.env.ADMIN_KEY || '').trim();
   const { key = '' } = event.queryStringParameters || {};
+  const trimmedKey = key.trim();
 
-  if (!adminKey || key !== adminKey) {
+  if (!adminKey) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'ADMIN_KEY environment variable is not set on the server.' }) };
+  }
+
+  if (trimmedKey !== adminKey) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 
@@ -31,6 +36,10 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: JSON.stringify(valid) };
   } catch (err) {
     console.error('Blobs error:', err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Failed to read sessions' }) };
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Failed to read sessions', detail: err.message }),
+    };
   }
 };

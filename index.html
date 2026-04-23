@@ -522,6 +522,7 @@ function AppearancePicker({ groups, onPick }) {
 
 // ─── WELCOME SCENE ────────────────────────────────────────────────
 function WelcomeScene({ onEnter }) {
+  useEffect(() => { const t = setTimeout(onEnter, 2800); return () => clearTimeout(t); }, [onEnter]);
   return (
     <div style={{
       position: 'absolute', inset: 0, overflow: 'hidden',
@@ -550,36 +551,11 @@ function WelcomeScene({ onEnter }) {
           <h1 style={{
             fontFamily: T.serif, fontSize: 104, lineHeight: 0.92,
             letterSpacing: '-0.03em', fontWeight: 400, color: '#fff',
-            margin: 0, marginBottom: 28,
+            margin: 0,
             textShadow: '0 4px 40px rgba(0,0,0,.2)',
           }}>
-            You're on<br />the list.
+            Welcome<br />to the<br />party.
           </h1>
-
-          <p style={{
-            fontFamily: T.sans, fontSize: 19, lineHeight: 1.55,
-            color: 'rgba(255,255,255,.92)', maxWidth: 460, marginBottom: 40,
-            textShadow: '0 2px 8px rgba(0,0,0,.15)',
-          }}>
-            Ava's hosting tonight, and she'd love to get to know you.
-            A few quick questions, a look created just for you, and
-            then the night is yours.
-          </p>
-
-          <button onClick={onEnter} style={{
-            padding: '19px 44px', borderRadius: 9999, border: 'none',
-            background: T.gradient, color: '#fff',
-            fontFamily: T.sans, fontWeight: 700, fontSize: 17,
-            letterSpacing: '.01em', cursor: 'pointer',
-            boxShadow: '0 14px 32px rgba(8,145,178,.5)',
-            display: 'inline-flex', alignItems: 'center', gap: 12,
-            transition: 'transform .2s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            Meet Ava <span style={{ fontSize: 22 }}>→</span>
-          </button>
         </div>
 
         {/* RIGHT — Ava card */}
@@ -702,18 +678,6 @@ function ChatScene({ onComplete }) {
         position: 'absolute', inset: 0,
         background: 'linear-gradient(160deg,rgba(255,182,193,.32) 0%,rgba(255,218,185,.24) 40%,rgba(186,225,255,.4) 100%)',
       }} />
-
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0,
-        display: 'flex', justifyContent: 'center', padding: '22px 0',
-        zIndex: 10, pointerEvents: 'none',
-      }}>
-        <span style={{
-          fontFamily: T.serif || T.sans, fontWeight: 700, fontSize: 22,
-          color: 'rgba(255,255,255,.92)', letterSpacing: '.04em',
-          textShadow: '0 2px 12px rgba(0,0,0,.2)',
-        }}>Welcome to the party!</span>
-      </div>
 
       <div style={{
         position: 'absolute', inset: 0,
@@ -2037,7 +2001,7 @@ function SceneJumper({ scene, onJump }) {
 function App() {
   const [scene, setScene] = useState(() => {
     if (window.SKIP_TO) return window.SKIP_TO;
-    try { const s = localStorage.getItem('avakin:scene'); return (s && s !== 'welcome') ? s : 'chat'; } catch { return 'chat'; }
+    try { return localStorage.getItem('avakin:scene') || 'welcome'; } catch { return 'welcome'; }
   });
   const [profile, setProfile] = useState(() => {
     try { return JSON.parse(localStorage.getItem('avakin:profile') || '{}'); } catch { return {}; }
