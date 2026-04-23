@@ -1,0 +1,2026 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Avakin · meet Ava</title>
+<meta name="viewport" content="width=1440, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+  /* === TOKENS === */
+  :root {
+    --color-primary-400: #22d3ee;
+    --color-primary-500: #0891b2;
+    --fg1: rgba(255,255,255,.95);
+    --fg2: rgba(255,255,255,.75);
+    --fg3: rgba(255,255,255,.50);
+    --fg-dark-1: #333333;
+    --fg-dark-2: #4f4f4f;
+    --fg-brand: #0891b2;
+    --surface-1: rgba(255,255,255,.10);
+    --border-subtle: rgba(255,255,255,.10);
+    --border-default: rgba(255,255,255,.20);
+    --border-strong: rgba(255,255,255,.30);
+    --glass-rainbow: linear-gradient(129deg,rgba(255,182,193,.3) 0%,rgba(255,218,185,.3) 20%,rgba(255,255,186,.3) 40%,rgba(186,255,201,.3) 60%,rgba(186,225,255,.3) 80%,rgba(221,160,221,.3) 100%);
+    --glass-base: linear-gradient(90deg,rgba(255,255,255,.9) 0%,rgba(255,255,255,.9) 100%);
+    --accent-gradient: linear-gradient(166deg,#0891b2 0%,#60a5fa 100%);
+    --font-display: 'Libre Baskerville', Georgia, serif;
+    --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --radius-full: 9999px;
+    --blur-md: 12px;
+    --blur-lg: 20px;
+    --shadow-lg: 0 25px 50px -12px rgba(0,0,0,.25);
+    --shadow-xl: 0 30px 60px -15px rgba(0,0,0,.3);
+    --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  }
+
+  html, body { margin: 0; padding: 0; height: 100%; background: #0a0a14; overflow: hidden; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  #root { position: fixed; inset: 0; }
+  h1,h2,h3,h4,h5,h6 { font-family: 'Libre Baskerville', Georgia, serif; margin: 0; }
+  *::-webkit-scrollbar { display: none; }
+
+  /* === GLOBAL KEYFRAMES === */
+  @keyframes flo-fade-in { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes flo-bubble-in {
+    from { opacity: 0; transform: translateY(8px) scale(.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes flo-chip-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes flo-pop-in {
+    from { opacity: 0; transform: translate(-50%, -10px) scale(.8); }
+    to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  }
+  @keyframes flo-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+  @keyframes flo-pulse {
+    0%, 100% { opacity: .5; transform: translateX(-50%) scale(1); }
+    50%      { opacity: .9; transform: translateX(-50%) scale(1.1); }
+  }
+  @keyframes flo-blink { 0%, 100% { opacity: .3 } 50% { opacity: 1 } }
+  @keyframes flo-shimmer {
+    0%   { transform: translateX(-100%); opacity: 0 }
+    50%  { opacity: 1 }
+    100% { transform: translateX(100%); opacity: 0 }
+  }
+  @keyframes flo-spin { from { transform: translate(-50%,-50%) rotate(0) } to { transform: translate(-50%,-50%) rotate(360deg) } }
+  @keyframes flo-twinkle {
+    0%, 100% { opacity: 0; transform: scale(.5); }
+    50%      { opacity: 1; transform: scale(1.2); }
+  }
+  @keyframes eq-bounce { 0% { height: 30% } 100% { height: 100% } }
+  @keyframes flo-preview { from { width: 0 } to { width: 100% } }
+  @keyframes flo-panel-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(.96); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  }
+
+  .scene-stack { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="questions.js"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ─── TOKENS ───────────────────────────────────────────────────────
+const T = {
+  cyan:         '#0891b2',
+  sky:          '#60a5fa',
+  pink:         '#fb64b6',
+  orange:       '#ff8904',
+  danger:       '#ff637e',
+  success:      '#05df72',
+  text:         '#333',
+  muted:        '#4f4f4f',
+  rainbow:      'linear-gradient(129deg,rgba(255,182,193,.35) 0%,rgba(255,218,185,.35) 20%,rgba(255,255,186,.32) 40%,rgba(186,255,201,.35) 60%,rgba(186,225,255,.4) 80%,rgba(221,160,221,.35) 100%),linear-gradient(90deg,rgba(255,255,255,.55),rgba(255,255,255,.55))',
+  gradient:     'linear-gradient(135deg,#0891b2,#60a5fa)',
+  warmGradient: 'linear-gradient(135deg,#fb64b6 0%,#ff8904 100%)',
+  serif:        "'Libre Baskerville', Georgia, serif",
+  sans:         "'DM Sans', system-ui, sans-serif",
+};
+
+// ─── FAL.PRO IMAGE GENERATION ────────────────────────────────────
+async function generateFalAvatar(profile, customPrompt = '') {
+  // key is optional — if absent the call routes through /.netlify/functions/generate-avatar
+  const key = window.FAL_API_KEY || '';
+
+  // ── Identity & vibe (question: presents + feel + song) ──────────
+  const genderMap = { 'Female': 'young woman', 'Male': 'young man', 'Non-binary': 'person', 'surprise me': 'person' };
+  const gender = genderMap[profile.presents] || 'young woman';
+
+  const vibeMap = {
+    'intrigued':         'magnetic and quietly compelling, high social intrigue, refined cool-girl energy',
+    'charmed':           'warm and captivating, effortlessly charming, golden-hour glow energy',
+    'underestimated':    'quietly powerful, deceptively simple exterior concealing unmistakable status, composed and knowing',
+    'a little feral':    'electric and untamed, high energy with sharp edge, bold and attention-commanding',
+  };
+  const vibe = vibeMap[profile.feel] || 'confident and aspirational';
+  const songRef = profile.song ? ` The overall feeling should echo the energy of "${profile.song}".` : '';
+
+  // ── Identity text (free-form, from question 2) ──────────────────
+  const identityText = profile.identity ? ` They embody: ${profile.identity}.` : '';
+
+  // ── Hair & eyes from appearance picker ──────────────────────────
+  const hairDesc = profile.hair ? `${profile.hair} hair` : 'blonde hair';
+  const eyesDesc = profile.eyes ? `${profile.eyes} eyes` : 'blue eyes';
+
+  // ── Assemble structured prompt (PDF section order) ───────────────
+  const identityVibe     = `Identity and vibe: a polished, socially magnetic ${gender} with ${vibe}; confident, desirable, youthful, premium, and aspirational; cute-but-cool rather than aggressive, with a high-status fashion presence.${identityText}${songRef}`;
+  const bodyFaceHair     = `Body, face, and hair: full-body ${gender} avatar with elegant long fashion-avatar proportions, slim build, refined doll-like facial features, luminous skin, large expressive ${eyesDesc}, small nose, glossy full lips, soft blush, and ${hairDesc} styled to perfection.`;
+  const outfitSilhouette = `Outfit silhouette: high-fashion contemporary silhouette with editorial flair, statement volume and considered proportions.`;
+  const materials        = `Materials and colour: high-quality luxury materials, iridescent or textured finishes, crisp material separation, premium palette with warm accent highlights.`;
+  const accessories      = `Accessories and footwear: gold hoop earrings, futuristic choker collar detail, small structured handbag, chunky premium fashion sneakers with metallic accents, sport-luxury styling.`;
+  const pose        = `Pose: ALWAYS full-body head-to-toe, complete figure visible from crown to feet, no cropping. Full-body editorial pose, relaxed and self-aware, one leg lightly crossing in front of the other, calm confidence, composed fashion attitude. The entire body including footwear MUST be visible in the frame.`;
+  const renderStyle = `Render style: MUST be high-end beauty CGI. Clean contour definition, subtle line emphasis around forms, airbrushed realism, smooth polished skin, controlled highlights, sharp garment construction, premium stylised 3D finish, collectible avatar appeal, minimal luxury studio background. This is a polished 3D CGI render — not illustration, not photography, not painting.`;
+  const customPart  = customPrompt ? ` Additional styling notes: ${customPrompt}.` : '';
+
+  // Negative constraints appear in BOTH the positive prompt and as a dedicated
+  // negative_prompt parameter so the model applies them with full weight.
+  const negativeText  = `not painterly, not brushy, not sketch-like, no visible paint texture, no concept art looseness, no messy shading, no rough render, no broken anatomy, no distorted hands, no malformed footwear, no cropped figure, no cut-off legs, no missing feet`;
+  const negativeInPrompt = `Negative constraints: ${negativeText}.`;
+
+  const prompt = `Create an original fashion avatar as a stylised CGI full length character render. ${identityVibe} ${bodyFaceHair} ${outfitSilhouette} ${materials} ${accessories} ${pose} ${renderStyle}${customPart} ${negativeInPrompt}`;
+
+  // Route through the Netlify serverless proxy so the key stays server-side.
+  // Falls back to direct fal.run if a client key is present (local dev only).
+  const endpoint = key
+    ? 'https://fal.run/fal-ai/flux/schnell'
+    : '/.netlify/functions/generate-avatar';
+
+  const headers = key
+    ? { 'Authorization': `Key ${key}`, 'Content-Type': 'application/json' }
+    : { 'Content-Type': 'application/json' };
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      prompt,
+      negative_prompt: negativeText,
+      image_size: 'portrait_4_3',
+      num_inference_steps: 4,
+      num_images: 1,
+    }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.images?.[0]?.url ?? null;
+}
+
+// ─── PRIMITIVES ───────────────────────────────────────────────────
+function GlassPanel({ children, style = {}, elevated = false, ...rest }) {
+  return (
+    <div {...rest} style={{
+      backgroundImage: T.rainbow,
+      backdropFilter: elevated ? 'blur(24px) saturate(180%)' : 'blur(16px) saturate(160%)',
+      WebkitBackdropFilter: elevated ? 'blur(24px) saturate(180%)' : 'blur(16px) saturate(160%)',
+      border: '1px solid rgba(255,255,255,.4)',
+      boxShadow: elevated ? '0 30px 60px -15px rgba(0,0,0,.3)' : '0 20px 40px rgba(55,56,49,.1)',
+      borderRadius: 32,
+      ...style,
+    }}>{children}</div>
+  );
+}
+
+function GlassSurface({ children, style = {}, ...rest }) {
+  return (
+    <div {...rest} style={{
+      background: 'rgba(255,255,255,.18)',
+      backdropFilter: 'blur(12px) saturate(160%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(160%)',
+      border: '1px solid rgba(255,255,255,.3)',
+      borderRadius: 9999,
+      ...style,
+    }}>{children}</div>
+  );
+}
+
+function AvaPortrait({ size = 44, ring = true, talking = false }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 9999, flexShrink: 0,
+      border: ring ? '2px solid rgba(255,255,255,.7)' : 'none',
+      boxShadow: ring ? `0 0 0 2px rgba(255,255,255,.4), 0 0 ${talking ? 22 : 0}px rgba(8,145,178,.5)` : 'none',
+      backgroundImage: "url('assets/avatar-sarahlee.png')",
+      backgroundSize: '220%',
+      backgroundPosition: 'center 8%',
+      transition: 'box-shadow .3s',
+    }} />
+  );
+}
+
+function Bubble({ text, side = 'left', delay = 0 }) {
+  const left = side === 'left';
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      alignItems: left ? 'flex-start' : 'flex-end',
+      animation: `flo-bubble-in .4s ${delay}ms cubic-bezier(.34,1.56,.64,1) both`,
+    }}>
+      <div style={{
+        padding: '11px 16px',
+        borderRadius: left ? '20px 20px 20px 6px' : '20px 20px 6px 20px',
+        background: left ? 'rgba(255,255,255,.78)' : T.gradient,
+        color: left ? T.text : '#fff',
+        fontFamily: T.sans, fontWeight: 500, fontSize: 15,
+        maxWidth: 380, lineHeight: 1.5,
+        boxShadow: left ? '0 2px 10px rgba(0,0,0,.06)' : '0 6px 16px rgba(8,145,178,.3)',
+      }}>{text}</div>
+    </div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '11px 15px', background: 'rgba(255,255,255,.78)',
+      borderRadius: '20px 20px 20px 6px',
+      boxShadow: '0 2px 10px rgba(0,0,0,.06)',
+      animation: 'flo-bubble-in .3s ease both',
+    }}>
+      {[0, 1, 2].map(i => (
+        <div key={i} style={{
+          width: 6, height: 6, borderRadius: 9999, background: T.cyan,
+          animation: `flo-blink 1.2s ${i * 0.18}s infinite`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function SendIcon({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <path d="M3 10l14-7-4 17-3-7-7-3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ─── TEXT INPUT ───────────────────────────────────────────────────
+function TextInput({ onSubmit, placeholder }) {
+  const [v, setV] = useState('');
+  const ref = useRef(null);
+  useEffect(() => { setTimeout(() => ref.current?.focus(), 350); }, []);
+  const go = () => { const t = v.trim(); if (t) onSubmit(t); };
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '10px 10px 10px 20px',
+      background: 'rgba(255,255,255,.58)',
+      border: `1.5px solid ${v ? T.cyan : 'rgba(8,145,178,.3)'}`,
+      borderRadius: 9999,
+      boxShadow: v ? '0 0 0 4px rgba(8,145,178,.1)' : 'none',
+      transition: 'border-color .2s, box-shadow .2s',
+      animation: 'flo-chip-in .35s ease both',
+    }}>
+      <input
+        ref={ref} value={v}
+        onChange={e => setV(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && go()}
+        placeholder={placeholder}
+        style={{
+          flex: 1, border: 'none', outline: 'none', background: 'transparent',
+          fontFamily: T.sans, fontSize: 15, fontWeight: 500, color: T.text,
+        }}
+      />
+      <button onClick={go} disabled={!v.trim()} style={{
+        width: 40, height: 40, borderRadius: 9999, border: 'none',
+        background: v.trim() ? T.gradient : 'rgba(8,145,178,.2)',
+        color: '#fff', cursor: v.trim() ? 'pointer' : 'default',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: v.trim() ? '0 6px 14px rgba(8,145,178,.5)' : 'none',
+        transition: 'all .2s',
+      }}><SendIcon /></button>
+    </div>
+  );
+}
+
+// ─── CHOICE CHIPS ─────────────────────────────────────────────────
+function ChoiceChips({ options, onPick, writeIn }) {
+  const [picked, setPicked] = useState(null);
+  const [writing, setWriting] = useState(false);
+  const [custom, setCustom] = useState('');
+  const ref = useRef(null);
+
+  const go = (i) => {
+    if (picked !== null) return;
+    setPicked(i);
+    setTimeout(() => onPick(options[i].v), 420);
+  };
+
+  const submitCustom = () => {
+    const t = custom.trim();
+    if (!t) return;
+    onPick(t);
+  };
+
+  useEffect(() => { if (writing) setTimeout(() => ref.current?.focus(), 200); }, [writing]);
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {options.map((opt, i) => {
+          const on = i === picked;
+          return (
+            <button key={i} onClick={() => go(i)} disabled={picked !== null || writing} style={{
+              padding: '14px 16px', borderRadius: 18, border: 'none',
+              cursor: (picked !== null || writing) ? 'default' : 'pointer',
+              background: on ? T.gradient : 'rgba(255,255,255,.55)',
+              color: on ? '#fff' : T.text,
+              fontFamily: T.sans, fontWeight: 600, fontSize: 14,
+              display: 'flex', alignItems: 'center', gap: 10,
+              boxShadow: on ? '0 8px 18px rgba(8,145,178,.4)' : '0 2px 8px rgba(0,0,0,.05)',
+              transform: on ? 'scale(1.03)' : 'scale(1)',
+              opacity: writing ? 0.5 : 1,
+              transition: 'all .25s cubic-bezier(.34,1.56,.64,1)',
+              animation: `flo-chip-in .35s ${i * 0.06}s ease both`,
+            }}>
+              <span style={{ fontSize: 20 }}>{opt.emoji}</span>
+              <span style={{ textAlign: 'left' }}>{opt.v}</span>
+            </button>
+          );
+        })}
+      </div>
+      {writeIn && !writing && picked === null && (
+        <button onClick={() => setWriting(true)} style={{
+          marginTop: 10, width: '100%', padding: '10px 14px',
+          borderRadius: 9999, border: '1px dashed rgba(8,145,178,.4)',
+          background: 'rgba(255,255,255,.3)', color: T.cyan,
+          fontFamily: T.sans, fontWeight: 600, fontSize: 13,
+          cursor: 'pointer',
+        }}>✎ {writeIn}</button>
+      )}
+      {writing && (
+        <div style={{
+          marginTop: 10, display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 8px 8px 18px',
+          background: 'rgba(255,255,255,.6)',
+          border: `1.5px solid ${T.cyan}`,
+          borderRadius: 9999,
+          animation: 'flo-chip-in .3s ease both',
+        }}>
+          <input
+            ref={ref} value={custom}
+            onChange={e => setCustom(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') submitCustom(); if (e.key === 'Escape') setWriting(false); }}
+            placeholder="your own answer…"
+            style={{
+              flex: 1, border: 'none', outline: 'none', background: 'transparent',
+              fontFamily: T.sans, fontSize: 14, fontWeight: 500, color: T.text,
+            }}
+          />
+          <button onClick={() => setWriting(false)} style={{
+            padding: '8px 12px', borderRadius: 9999, border: 'none',
+            background: 'transparent', color: T.muted,
+            fontFamily: T.sans, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+          }}>cancel</button>
+          <button onClick={submitCustom} disabled={!custom.trim()} style={{
+            width: 36, height: 36, borderRadius: '50%', border: 'none',
+            background: custom.trim() ? T.gradient : 'rgba(8,145,178,.2)',
+            color: '#fff', cursor: custom.trim() ? 'pointer' : 'default',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}><SendIcon size={16} /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── APPEARANCE PICKER ───────────────────────────────────────────
+function AppearancePicker({ groups, onPick }) {
+  const [selections, setSelections] = useState({});
+
+  const select = (groupId, value) => {
+    const next = { ...selections, [groupId]: value };
+    setSelections(next);
+    if (Object.keys(next).length === groups.length) {
+      setTimeout(() => onPick(next), 420);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'flo-chip-in .35s ease both' }}>
+      {groups.map((group, gi) => (
+        <div key={group.id}>
+          <div style={{
+            fontFamily: T.sans, fontSize: 11, fontWeight: 700,
+            letterSpacing: '.16em', textTransform: 'uppercase',
+            color: T.cyan, marginBottom: 8, opacity: .9,
+          }}>{group.label}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {group.options.map((opt, i) => {
+              const isColor = !!opt.color;
+              const picked = selections[group.id] === opt.v;
+              const anyPicked = selections[group.id] !== undefined;
+              return isColor ? (
+                <button key={i} title={opt.v} onClick={() => select(group.id, opt.v)}
+                  disabled={anyPicked}
+                  style={{
+                    width: 34, height: 34, borderRadius: '50%', border: 'none',
+                    background: opt.color, cursor: anyPicked ? 'default' : 'pointer',
+                    boxShadow: picked
+                      ? `0 0 0 3px #fff, 0 0 0 5px ${T.cyan}`
+                      : '0 2px 8px rgba(0,0,0,.2)',
+                    transform: picked ? 'scale(1.2)' : 'scale(1)',
+                    opacity: anyPicked && !picked ? 0.35 : 1,
+                    transition: 'all .2s cubic-bezier(.34,1.56,.64,1)',
+                    animation: `flo-chip-in .3s ${i * 0.04}s ease both`,
+                  }}
+                />
+              ) : (
+                <button key={i} onClick={() => select(group.id, opt.v)}
+                  disabled={anyPicked}
+                  style={{
+                    padding: '8px 16px', borderRadius: 9999, border: 'none',
+                    cursor: anyPicked ? 'default' : 'pointer',
+                    background: picked ? T.gradient : 'rgba(255,255,255,.55)',
+                    color: picked ? '#fff' : T.text,
+                    fontFamily: T.sans, fontWeight: 600, fontSize: 13,
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    boxShadow: picked ? '0 6px 14px rgba(8,145,178,.4)' : '0 2px 6px rgba(0,0,0,.06)',
+                    transform: picked ? 'scale(1.05)' : 'scale(1)',
+                    opacity: anyPicked && !picked ? 0.35 : 1,
+                    transition: 'all .2s cubic-bezier(.34,1.56,.64,1)',
+                    animation: `flo-chip-in .3s ${i * 0.06}s ease both`,
+                  }}
+                >
+                  {opt.emoji && <span style={{ fontSize: 16 }}>{opt.emoji}</span>}
+                  <span>{opt.v}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── WELCOME SCENE ────────────────────────────────────────────────
+function WelcomeScene({ onEnter }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      background: "url('assets/bg-palmsprings.png') center / cover no-repeat",
+      animation: 'flo-fade-in .6s ease both',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(160deg,rgba(255,182,193,.28) 0%,rgba(255,218,185,.22) 40%,rgba(186,225,255,.35) 100%)',
+      }} />
+
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 64, padding: 80,
+      }}>
+        {/* LEFT */}
+        <div style={{ flex: '0 1 560px', color: '#fff', zIndex: 2 }}>
+          <div style={{
+            fontFamily: T.sans, fontSize: 11, fontWeight: 700,
+            letterSpacing: '.28em', textTransform: 'uppercase',
+            color: '#fff', opacity: .85, marginBottom: 18,
+            textShadow: '0 2px 10px rgba(0,0,0,.2)',
+          }}>◉ Tonight · Palm Springs Rooftop</div>
+
+          <h1 style={{
+            fontFamily: T.serif, fontSize: 104, lineHeight: 0.92,
+            letterSpacing: '-0.03em', fontWeight: 400, color: '#fff',
+            margin: 0, marginBottom: 28,
+            textShadow: '0 4px 40px rgba(0,0,0,.2)',
+          }}>
+            You're on<br />the list.
+          </h1>
+
+          <p style={{
+            fontFamily: T.sans, fontSize: 19, lineHeight: 1.55,
+            color: 'rgba(255,255,255,.92)', maxWidth: 460, marginBottom: 40,
+            textShadow: '0 2px 8px rgba(0,0,0,.15)',
+          }}>
+            Ava's hosting tonight, and she'd love to get to know you.
+            A few quick questions, a look created just for you, and
+            then the night is yours.
+          </p>
+
+          <button onClick={onEnter} style={{
+            padding: '19px 44px', borderRadius: 9999, border: 'none',
+            background: T.gradient, color: '#fff',
+            fontFamily: T.sans, fontWeight: 700, fontSize: 17,
+            letterSpacing: '.01em', cursor: 'pointer',
+            boxShadow: '0 14px 32px rgba(8,145,178,.5)',
+            display: 'inline-flex', alignItems: 'center', gap: 12,
+            transition: 'transform .2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            Meet Ava <span style={{ fontSize: 22 }}>→</span>
+          </button>
+        </div>
+
+        {/* RIGHT — Ava card */}
+        <div style={{ flex: '0 1 420px', position: 'relative' }}>
+          <GlassPanel elevated style={{ padding: 28, animation: 'flo-float 5s ease-in-out infinite' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
+              <AvaPortrait size={60} talking />
+              <div>
+                <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 17, color: T.cyan }}>Ava</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: 9999, background: T.success, boxShadow: '0 0 0 2px rgba(255,255,255,.6)' }} />
+                  <span style={{ fontFamily: T.sans, fontSize: 12, fontWeight: 500, color: 'rgba(51,51,51,.7)' }}>your bestie · hosting</span>
+                </div>
+              </div>
+              <div style={{ marginLeft: 'auto', fontFamily: T.sans, fontWeight: 700, fontSize: 10, letterSpacing: '.18em', color: T.danger }}>HOST</div>
+            </div>
+            <div style={{
+              padding: '14px 18px', borderRadius: '20px 20px 20px 6px',
+              background: 'rgba(255,255,255,.75)', color: T.text,
+              fontFamily: T.sans, fontWeight: 500, fontSize: 15, lineHeight: 1.5,
+            }}>
+              So happy you're here. Before the night gets going, I'd love to know a little about you — it'll only take a minute, I promise.
+            </div>
+          </GlassPanel>
+          <div style={{
+            position: 'absolute', top: -40, right: -20, width: 100, height: 100,
+            borderRadius: 24, background: T.warmGradient, opacity: .7,
+            filter: 'blur(30px)', animation: 'flo-float 7s ease-in-out infinite',
+          }} />
+        </div>
+      </div>
+
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 120, background: 'linear-gradient(transparent,rgba(0,0,0,.25))' }} />
+    </div>
+  );
+}
+
+// ─── CHAT SCENE ───────────────────────────────────────────────────
+function ChatScene({ onComplete }) {
+  const [step, setStep] = useState(0);
+  const [msgs, setMsgs] = useState([]);
+  const [typing, setTyping] = useState(false);
+  const [show, setShow] = useState(false);
+  const [profile, setProfile] = useState({});
+  const scrollRef = useRef(null);
+  const started = useRef(false);
+
+  const pushAva = useCallback((texts, onDone) => {
+    let off = 0;
+    texts.forEach((t, i) => {
+      const tAt = i === 0 ? 400 + off : off + 700;
+      const mAt = tAt + 900;
+      off = mAt;
+      setTimeout(() => setTyping(true), tAt);
+      setTimeout(() => {
+        setTyping(false);
+        setMsgs(p => [...p, { text: t, side: 'left' }]);
+        if (i === texts.length - 1 && onDone) setTimeout(onDone, 300);
+      }, mAt);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const q = window.QUESTIONS[0];
+    pushAva(typeof q.ava === 'function' ? q.ava() : q.ava, () => setShow(true));
+  }, [pushAva]);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [msgs, typing, show]);
+
+  const handleAnswer = (value) => {
+    const q = window.QUESTIONS[step];
+    // For appearance questions, value is an object like { presents, hair, eyes }
+    // — spread each key directly into the profile rather than nesting under q.id
+    const newProfile = q.kind === 'appearance'
+      ? { ...profile, ...value }
+      : { ...profile, [q.id]: value };
+    setProfile(newProfile);
+    setShow(false);
+
+    // Build a readable summary for the chat bubble
+    let displayText;
+    if (q.kind === 'appearance') {
+      displayText = Object.values(value).join(' · ');
+    } else {
+      displayText = value;
+    }
+    setMsgs(p => [...p, { text: displayText, side: 'right' }]);
+
+    const nextStep = step + 1;
+    if (nextStep >= window.QUESTIONS.length) {
+      setTimeout(() => {
+        pushAva([
+          "That's everything I need — you're going to love this.",
+          `Give me just a moment${newProfile.name ? ', ' + newProfile.name : ''}.`,
+        ], () => setTimeout(() => onComplete(newProfile), 1200));
+      }, 200);
+      return;
+    }
+
+    const nq = window.QUESTIONS[nextStep];
+    const avaTexts = typeof nq.ava === 'function' ? nq.ava(value) : nq.ava;
+    setTimeout(() => {
+      pushAva(avaTexts, () => { setStep(nextStep); setShow(true); });
+    }, 250);
+  };
+
+  const q = window.QUESTIONS[step];
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      background: "url('assets/bg-palmsprings.png') center / cover no-repeat",
+      animation: 'flo-fade-in .6s ease both',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(160deg,rgba(255,182,193,.32) 0%,rgba(255,218,185,.24) 40%,rgba(186,225,255,.4) 100%)',
+      }} />
+
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 72, padding: '60px 80px',
+      }}>
+        {/* LEFT — Ava portrait */}
+        <div style={{
+          flex: '0 1 460px', position: 'relative', height: '85%',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div style={{
+            position: 'absolute', inset: '-5% -10% -5% -10%',
+            background: 'radial-gradient(circle at 50% 55%, rgba(251,100,182,.35), transparent 65%)',
+            animation: 'flo-pulse 4s ease-in-out infinite',
+          }} />
+          <div style={{
+            width: '100%', height: '100%',
+            backgroundImage: "url('assets/avatar-sarahlee.png')",
+            backgroundSize: 'contain', backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center bottom',
+            filter: 'drop-shadow(0 30px 60px rgba(0,0,0,.25))',
+            animation: 'flo-float 6s ease-in-out infinite',
+          }} />
+          <div style={{
+            position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)',
+            padding: '7px 16px 7px 7px', display: 'flex', alignItems: 'center', gap: 9,
+            background: 'rgba(255,255,255,.25)',
+            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            borderRadius: 9999, border: '1px solid rgba(255,255,255,.4)',
+            boxShadow: '0 8px 20px rgba(0,0,0,.15)',
+          }}>
+            <AvaPortrait size={28} />
+            <span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 14, color: '#fff' }}>Ava</span>
+            <div style={{ width: 7, height: 7, borderRadius: 9999, background: T.success }} />
+          </div>
+        </div>
+
+        {/* RIGHT — chat panel */}
+        <div style={{ flex: '0 1 480px', display: 'flex', flexDirection: 'column', zIndex: 2 }}>
+          <GlassPanel elevated style={{ padding: 0, overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '20px 22px', borderBottom: '1px solid rgba(255,255,255,.4)',
+            }}>
+              <AvaPortrait size={42} talking={typing} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 15, color: T.cyan }}>Ava</div>
+                <div style={{ fontFamily: T.sans, fontSize: 12, color: 'rgba(51,51,51,.6)', fontWeight: 500 }}>
+                  {typing ? 'typing…' : 'question ' + Math.min(step + 1, window.QUESTIONS.length) + ' of ' + window.QUESTIONS.length}
+                </div>
+              </div>
+              <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 10, letterSpacing: '.16em', color: T.danger }}>HOST</div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 4, padding: '10px 22px 0' }}>
+              {QUESTIONS.map((_, i) => (
+                <div key={i} style={{
+                  flex: 1, height: 3, borderRadius: 9999,
+                  background: i < step ? T.cyan : i === step ? T.gradient : 'rgba(8,145,178,.15)',
+                  transition: 'background .3s',
+                }} />
+              ))}
+            </div>
+
+            <div ref={scrollRef} style={{
+              display: 'flex', flexDirection: 'column', gap: 8,
+              padding: '16px 22px', maxHeight: 300, minHeight: 180, overflowY: 'auto',
+              scrollbarWidth: 'none',
+            }}>
+              {msgs.slice(-5).map((m, i) => <Bubble key={msgs.length - 5 + i} text={m.text} side={m.side} />)}
+              {typing && <TypingDots />}
+            </div>
+
+            <div style={{ padding: '8px 22px 22px', minHeight: q && q.kind === 'appearance' ? 200 : 80 }}>
+              {show && q && q.kind === 'text' && (
+                <TextInput placeholder={q.placeholder} onSubmit={handleAnswer} />
+              )}
+              {show && q && q.kind === 'choice' && (
+                <ChoiceChips options={q.options} onPick={handleAnswer} writeIn={q.writeIn} />
+              )}
+              {show && q && q.kind === 'appearance' && (
+                <AppearancePicker groups={q.groups} onPick={handleAnswer} />
+              )}
+            </div>
+          </GlassPanel>
+
+          <div style={{
+            marginTop: 16, textAlign: 'center',
+            fontFamily: T.sans, fontSize: 12, color: 'rgba(255,255,255,.75)',
+            textShadow: '0 1px 4px rgba(0,0,0,.2)',
+          }}>
+            There are no wrong answers — just be yourself.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── GENERATE SCENE ───────────────────────────────────────────────
+function GenerateScene({ profile, onReveal }) {
+  const [phase, setPhase] = useState(0);
+  const [msgIdx, setMsgIdx] = useState(0);
+  const [falImageUrl, setFalImageUrl] = useState(null);
+  const msgs = [
+    "putting your look together…",
+    "finding exactly the right pieces…",
+    "adding the finishing touches…",
+    "almost ready — I think you're going to love this.",
+  ];
+
+  useEffect(() => {
+    let cancelled = false;
+    const iv = setInterval(() => setMsgIdx(i => Math.min(i + 1, msgs.length - 1)), 1200);
+
+    generateFalAvatar(profile).then(url => {
+      if (!cancelled && url) setFalImageUrl(url);
+    });
+
+    const t = setTimeout(() => { clearInterval(iv); setPhase(1); }, 5400);
+    return () => { cancelled = true; clearInterval(iv); clearTimeout(t); };
+  }, []);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      background: "url('assets/bg-palmsprings.png') center / cover no-repeat",
+      animation: 'flo-fade-in .5s ease both',
+    }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: 'linear-gradient(160deg,rgba(255,182,193,.35),rgba(186,225,255,.45))' }} />
+
+      <div style={{
+        position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
+        width: 620, height: 620, borderRadius: '50%',
+        background: 'conic-gradient(from 0deg, #fb64b6, #ff8904, #60a5fa, #0891b2, #fb64b6)',
+        filter: 'blur(80px)', opacity: phase === 0 ? .55 : .3,
+        animation: 'flo-spin 8s linear infinite',
+      }} />
+
+      <div style={{
+        position: 'absolute', inset: 0, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+        gap: 40, padding: 80,
+      }}>
+        {phase === 0 && (
+          <>
+            <div style={{ position: 'relative', width: 220, height: 220 }}>
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                background: 'conic-gradient(from 0deg, #fb64b6, #ff8904, #fff59d, #86efac, #60a5fa, #c4b5fd, #fb64b6)',
+                animation: 'flo-spin 4s linear infinite',
+                filter: 'blur(2px)',
+              }} />
+              <div style={{
+                position: 'absolute', inset: 8, borderRadius: '50%',
+                background: 'rgba(255,255,255,.35)',
+                backdropFilter: 'blur(24px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,.6)',
+                boxShadow: 'inset 0 4px 20px rgba(255,255,255,.4), 0 20px 40px rgba(0,0,0,.15)',
+              }} />
+              <div style={{
+                position: 'absolute', inset: '30%', borderRadius: '50%',
+                background: 'radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,.4) 40%, transparent 70%)',
+                animation: 'flo-pulse 2s ease-in-out infinite',
+              }} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontFamily: T.serif, fontSize: 48, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,.2)', opacity: .85 }}>✦</span>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: T.sans, fontSize: 11, fontWeight: 700,
+                letterSpacing: '.28em', textTransform: 'uppercase',
+                color: 'rgba(255,255,255,.7)', marginBottom: 16 }}>✧ Ava's working</div>
+              <div style={{ fontFamily: T.serif, fontSize: 36, color: '#fff',
+                textShadow: '0 4px 20px rgba(0,0,0,.25)', marginBottom: 14, lineHeight: 1.1 }}>
+                One sec.
+              </div>
+              <div style={{ fontFamily: T.sans, fontSize: 16, color: 'rgba(255,255,255,.92)',
+                minHeight: 24, transition: 'all .4s', textShadow: '0 2px 8px rgba(0,0,0,.2)',
+                fontStyle: 'italic' }}>
+                {msgs[msgIdx]}
+              </div>
+            </div>
+          </>
+        )}
+
+        {phase === 1 && <RevealMoment profile={profile} falImageUrl={falImageUrl} onContinue={(choice) => onReveal(choice, falImageUrl)} />}
+      </div>
+    </div>
+  );
+}
+
+function RevealMoment({ profile, falImageUrl, onContinue }) {
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setRevealed(true), 100); return () => clearTimeout(t); }, []);
+
+  const avatarSrc = falImageUrl || 'assets/avatar-sarahlee.png';
+  const isFalImage = !!falImageUrl;
+
+  return (
+    <div style={{ display: 'flex', gap: 64, alignItems: 'center', width: '100%', maxWidth: 1200,
+      animation: 'flo-fade-in .6s ease both' }}>
+      <div style={{
+        flex: '0 1 420px', height: '70vh', maxHeight: 700, position: 'relative',
+        borderRadius: 40,
+        background: 'linear-gradient(145deg,rgba(255,255,255,.25),rgba(255,255,255,.1))',
+        backdropFilter: 'blur(16px)', border: '2px solid rgba(255,255,255,.5)',
+        boxShadow: '0 40px 80px rgba(0,0,0,.25), inset 0 0 60px rgba(255,255,255,.2)',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url('${avatarSrc}')`,
+          backgroundSize: isFalImage ? 'cover' : 'contain',
+          backgroundPosition: isFalImage ? 'center top' : 'center bottom',
+          backgroundRepeat: 'no-repeat',
+          transform: revealed ? 'scale(1)' : 'scale(1.08)',
+          opacity: revealed ? 1 : 0,
+          transition: 'transform 1.4s cubic-bezier(.34,1.56,.64,1), opacity 1s',
+          filter: 'drop-shadow(0 20px 40px rgba(0,0,0,.2))',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(115deg, transparent 30%, rgba(255,255,255,.4) 50%, transparent 70%)',
+          animation: 'flo-shimmer 3s ease-in-out 0.3s',
+          pointerEvents: 'none',
+        }} />
+        <div style={{ position: 'absolute', inset: 12, borderRadius: 30, border: '1px solid rgba(255,255,255,.35)', pointerEvents: 'none' }} />
+      </div>
+
+      <div style={{ flex: '0 1 460px', color: '#fff' }}>
+        <div style={{ fontFamily: T.sans, fontSize: 11, fontWeight: 700,
+          letterSpacing: '.28em', textTransform: 'uppercase', color: '#fff', opacity: .8,
+          marginBottom: 16 }}>✧ Your fit · by Ava</div>
+        <h1 style={{ fontFamily: T.serif, fontSize: 72, lineHeight: .95,
+          color: '#fff', margin: 0, marginBottom: 24, textShadow: '0 4px 30px rgba(0,0,0,.25)' }}>
+          Iridescent.<br />Obviously.
+        </h1>
+        <p style={{ fontFamily: T.sans, fontSize: 17, lineHeight: 1.55,
+          color: 'rgba(255,255,255,.92)', marginBottom: 28, maxWidth: 420,
+          textShadow: '0 2px 8px rgba(0,0,0,.15)' }}>
+          You wanted <em>{profile.identity || 'something unforgettable'}</em>, and you wanted people to feel <em>{profile.feel || 'intrigued'}</em>.
+          I think this is exactly it. You're going to walk in and own the room.
+        </p>
+
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button onClick={() => onContinue('keep')} style={{
+            padding: '16px 32px', borderRadius: 9999, border: 'none',
+            background: T.gradient, color: '#fff',
+            fontFamily: T.sans, fontWeight: 700, fontSize: 15, cursor: 'pointer',
+            boxShadow: '0 12px 28px rgba(8,145,178,.45)',
+            transition: 'transform .15s',
+          }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+            Love it — take me in →
+          </button>
+          <button onClick={() => onContinue('edit')} style={{
+            padding: '16px 26px', borderRadius: 9999,
+            border: '1.5px solid rgba(255,255,255,.6)', background: 'rgba(255,255,255,.12)',
+            backdropFilter: 'blur(12px)', color: '#fff',
+            fontFamily: T.sans, fontWeight: 600, fontSize: 15, cursor: 'pointer',
+          }}>Tweak something</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CUSTOMIZE SCENE ──────────────────────────────────────────────
+function CustomizeScene({ profile, onDone, onBack }) {
+  const [hair, setHair] = useState(0);
+  const [skin, setSkin] = useState(0);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  const hairs = [
+    { name: 'natural',  swatch: '#2b1b12', hueRotate: 0,   saturate: 1 },
+    { name: 'caramel',  swatch: '#8b5a2b', hueRotate: 15,  saturate: 1.1 },
+    { name: 'honey',    swatch: '#d9a65a', hueRotate: 28,  saturate: 1.2 },
+    { name: 'platinum', swatch: '#e8dfcf', hueRotate: 10,  saturate: 0.55, brightness: 1.2 },
+    { name: 'auburn',   swatch: '#a34428', hueRotate: -15, saturate: 1.3 },
+    { name: 'rose',     swatch: '#d46b8a', hueRotate: -35, saturate: 1.4 },
+    { name: 'noir',     swatch: '#0f0a0a', hueRotate: 0,   saturate: 0.6, brightness: 0.75 },
+  ];
+
+  const skins = [
+    { name: 'porcelain',  swatch: '#f5dfc7', filter: 'brightness(1.1) saturate(.85)' },
+    { name: 'warm ivory', swatch: '#ecc7a4', filter: 'brightness(1.04) saturate(.95)' },
+    { name: 'honey',      swatch: '#d5a374', filter: 'brightness(.98) saturate(1.05) hue-rotate(-4deg)' },
+    { name: 'amber',      swatch: '#b47a47', filter: 'brightness(.9) saturate(1.1) hue-rotate(-8deg)' },
+    { name: 'chestnut',   swatch: '#8a5230', filter: 'brightness(.78) saturate(1.15) hue-rotate(-10deg)' },
+    { name: 'espresso',   swatch: '#4d2a18', filter: 'brightness(.62) saturate(1.2) hue-rotate(-12deg)' },
+  ];
+
+  const h = hairs[hair];
+  const s = skins[skin];
+  const mirrorSrc = profile.falImageUrl || 'assets/avatar-sarahlee.png';
+  const mirrorIsFal = !!profile.falImageUrl;
+
+  const handleDone = async () => {
+    if (!customPrompt.trim()) { onDone(null); return; }
+    setGenerating(true);
+    const url = await generateFalAvatar(profile, customPrompt.trim());
+    setGenerating(false);
+    onDone(url);
+  };
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      background: "url('assets/bg-palmsprings.png') center / cover no-repeat",
+      animation: 'flo-fade-in .5s ease both',
+    }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: 'linear-gradient(160deg,rgba(255,182,193,.25),rgba(186,225,255,.35))' }} />
+
+      <div style={{ position: 'absolute', top: 40, left: 0, right: 0,
+        display: 'flex', justifyContent: 'center', zIndex: 3 }}>
+        <GlassPanel style={{ padding: '14px 22px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <AvaPortrait size={36} talking />
+          <div style={{ fontFamily: T.sans, fontSize: 15, color: T.text, fontWeight: 500 }}>
+            Take your time — this is your look, make it feel right.
+          </div>
+        </GlassPanel>
+      </div>
+
+      <div style={{ position: 'absolute', inset: 0, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', gap: 64, padding: 80 }}>
+
+        {/* MIRROR */}
+        <div style={{
+          flex: '0 1 440px', height: '72vh', maxHeight: 720, position: 'relative',
+          borderRadius: 40,
+          background: 'linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.08))',
+          backdropFilter: 'blur(16px)', border: '2px solid rgba(255,255,255,.5)',
+          boxShadow: '0 40px 80px rgba(0,0,0,.25), inset 0 0 60px rgba(255,255,255,.2)',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url('${mirrorSrc}')`,
+            backgroundSize: mirrorIsFal ? 'cover' : 'contain',
+            backgroundPosition: mirrorIsFal ? 'center top' : 'center bottom',
+            backgroundRepeat: 'no-repeat',
+            filter: mirrorIsFal ? 'none' : s.filter,
+            transition: 'filter .5s',
+          }} />
+          {!mirrorIsFal && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: "url('assets/avatar-sarahlee.png')",
+              backgroundSize: 'contain', backgroundPosition: 'center bottom',
+              backgroundRepeat: 'no-repeat',
+              WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 38%, transparent 48%)',
+              maskImage: 'linear-gradient(180deg, #000 0%, #000 38%, transparent 48%)',
+              filter: `hue-rotate(${h.hueRotate}deg) saturate(${h.saturate}) brightness(${h.brightness ?? 1})`,
+              transition: 'filter .5s',
+              opacity: h.name === 'natural' ? 0 : 1,
+            }} />
+          )}
+          {generating && (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,.45)', backdropFilter: 'blur(12px)',
+            }}>
+              <div style={{
+                width: 60, height: 60, borderRadius: '50%',
+                background: 'conic-gradient(from 0deg, #fb64b6, #ff8904, #60a5fa, #0891b2, #fb64b6)',
+                animation: 'flo-spin 1.2s linear infinite',
+              }} />
+            </div>
+          )}
+          <div style={{ position: 'absolute', inset: 12, borderRadius: 30,
+            border: '1px solid rgba(255,255,255,.35)', pointerEvents: 'none' }} />
+        </div>
+
+        {/* CONTROLS */}
+        <div style={{ flex: '0 1 460px' }}>
+          <GlassPanel elevated style={{ padding: 32 }}>
+            <div style={{ fontFamily: T.sans, fontSize: 10, fontWeight: 700,
+              letterSpacing: '.28em', color: T.cyan, marginBottom: 10 }}>✧ QUICK TWEAKS</div>
+            <div style={{ fontFamily: T.serif, fontSize: 30, color: T.text,
+              lineHeight: 1.1, marginBottom: 26 }}>Make it yours.</div>
+
+            <ControlRow label="Hair">
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {hairs.map((t, i) => (
+                  <button key={i} onClick={() => setHair(i)} title={t.name} style={{
+                    position: 'relative', width: 36, height: 36, borderRadius: 9999,
+                    border: hair === i ? `2.5px solid ${T.cyan}` : '2px solid rgba(255,255,255,.8)',
+                    background: t.swatch,
+                    boxShadow: hair === i ? '0 0 0 3px rgba(8,145,178,.25), 0 2px 6px rgba(0,0,0,.2)' : '0 2px 6px rgba(0,0,0,.15)',
+                    cursor: 'pointer', padding: 0, transition: 'all .15s',
+                  }} />
+                ))}
+              </div>
+              <div style={{ marginTop: 8, fontFamily: T.sans, fontSize: 12, color: T.muted, fontStyle: 'italic' }}>{h.name}</div>
+            </ControlRow>
+
+            <ControlRow label="Skin">
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {skins.map((t, i) => (
+                  <button key={i} onClick={() => setSkin(i)} title={t.name} style={{
+                    width: 36, height: 36, borderRadius: 9999,
+                    border: skin === i ? `2.5px solid ${T.cyan}` : '2px solid rgba(255,255,255,.8)',
+                    background: t.swatch,
+                    boxShadow: skin === i ? '0 0 0 3px rgba(8,145,178,.25), 0 2px 6px rgba(0,0,0,.2)' : '0 2px 6px rgba(0,0,0,.15)',
+                    cursor: 'pointer', padding: 0, transition: 'all .15s',
+                  }} />
+                ))}
+              </div>
+              <div style={{ marginTop: 8, fontFamily: T.sans, fontSize: 12, color: T.muted, fontStyle: 'italic' }}>{s.name}</div>
+            </ControlRow>
+
+            <ControlRow label="Describe your look">
+              <textarea
+                value={customPrompt}
+                onChange={e => setCustomPrompt(e.target.value)}
+                placeholder="e.g. more sparkle, oversized fur coat, electric blue accessories…"
+                rows={3}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: '12px 14px', borderRadius: 16,
+                  border: customPrompt ? `1.5px solid ${T.cyan}` : '1.5px solid rgba(8,145,178,.25)',
+                  background: 'rgba(255,255,255,.6)',
+                  fontFamily: T.sans, fontSize: 14, fontWeight: 500, color: T.text,
+                  lineHeight: 1.5, resize: 'none', outline: 'none',
+                  boxShadow: customPrompt ? '0 0 0 3px rgba(8,145,178,.1)' : 'none',
+                  transition: 'border-color .2s, box-shadow .2s',
+                }}
+              />
+              {customPrompt && (
+                <div style={{ marginTop: 6, fontFamily: T.sans, fontSize: 11, color: T.cyan, fontStyle: 'italic' }}>
+                  ✨ Ava will regenerate with your notes
+                </div>
+              )}
+            </ControlRow>
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              <button onClick={onBack} disabled={generating} style={{
+                flex: '0 0 auto', padding: '14px 20px', borderRadius: 9999,
+                border: '1.5px solid rgba(0,0,0,.15)', background: 'rgba(255,255,255,.7)',
+                color: T.muted, fontFamily: T.sans, fontWeight: 600, fontSize: 14,
+                cursor: generating ? 'default' : 'pointer', opacity: generating ? 0.5 : 1,
+              }}>← back</button>
+              <button onClick={handleDone} disabled={generating} style={{
+                flex: 1, padding: '14px 22px', borderRadius: 9999, border: 'none',
+                background: generating ? 'rgba(8,145,178,.5)' : T.gradient, color: '#fff',
+                fontFamily: T.sans, fontWeight: 700, fontSize: 15,
+                cursor: generating ? 'default' : 'pointer',
+                boxShadow: generating ? 'none' : '0 10px 24px rgba(8,145,178,.45)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}>
+                {generating ? (
+                  <>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', animation: 'flo-spin 0.8s linear infinite' }} />
+                    Ava's working…
+                  </>
+                ) : 'Okay — let me in →'}
+              </button>
+            </div>
+          </GlassPanel>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ControlRow({ label, children }) {
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <div style={{ fontFamily: T.sans, fontSize: 10, fontWeight: 700,
+        letterSpacing: '.2em', color: T.muted, textTransform: 'uppercase', marginBottom: 10 }}>{label}</div>
+      {children}
+    </div>
+  );
+}
+
+// ─── ARRIVAL SCENE ────────────────────────────────────────────────
+function ArrivalScene({ onArrived }) {
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase(1), 1400);
+    const t2 = setTimeout(() => onArrived(), 2800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      background: "url('assets/bg-palmsprings.png') center / cover no-repeat",
+    }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: 'linear-gradient(160deg,rgba(255,182,193,.22),rgba(186,225,255,.3))' }} />
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(10,10,20,.55)',
+        opacity: phase === 0 ? 1 : 0,
+        transition: 'opacity 1.2s ease-out',
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        color: '#fff', textAlign: 'center',
+        opacity: phase === 0 ? 1 : 0,
+        transform: phase === 0 ? 'translateY(0)' : 'translateY(-20px)',
+        transition: 'opacity .8s ease-out, transform .8s ease-out',
+        pointerEvents: 'none',
+      }}>
+        <div style={{
+          fontFamily: T.sans, fontSize: 11, fontWeight: 700,
+          letterSpacing: '.4em', textTransform: 'uppercase',
+          color: 'rgba(255,255,255,.7)', marginBottom: 18,
+          animation: 'flo-fade-in .6s ease both',
+        }}>✦ now entering</div>
+        <h1 style={{
+          fontFamily: T.serif, fontSize: 72, fontWeight: 400,
+          lineHeight: 1, margin: 0, color: '#fff',
+          textShadow: '0 4px 40px rgba(0,0,0,.3)',
+          letterSpacing: '-.02em',
+          animation: 'flo-fade-in .8s .1s ease both',
+        }}>Palm Springs Rooftop</h1>
+        <div style={{
+          fontFamily: T.sans, fontSize: 14, fontWeight: 500,
+          color: 'rgba(255,255,255,.6)', marginTop: 14,
+          animation: 'flo-fade-in 1s .3s ease both',
+        }}>hosted by Ava · 21 here</div>
+      </div>
+      {[...Array(8)].map((_, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${15 + ((i * 37) % 70)}%`,
+          top: `${25 + ((i * 53) % 50)}%`,
+          width: 3, height: 3, borderRadius: '50%',
+          background: '#fff', boxShadow: '0 0 8px rgba(255,255,255,.9)',
+          animation: `flo-twinkle 2s ${(i * 0.2) % 2}s infinite`,
+          pointerEvents: 'none',
+        }} />
+      ))}
+    </div>
+  );
+}
+
+// ─── PARTY SCENE ──────────────────────────────────────────────────
+function PartyScene({ profile = {}, onRestart, onGoCustomize, onRestartWithAva }) {
+  const [activePanel, setActivePanel] = useState(null);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      background: "url('assets/bg-palmsprings.png') center / cover no-repeat",
+      animation: 'flo-fade-in .8s ease both',
+    }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: 'linear-gradient(160deg,rgba(255,182,193,.18) 0%,rgba(255,218,185,.12) 40%,rgba(186,225,255,.2) 100%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* central avatar */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: '18%', transform: 'translateX(-50%)',
+        width: 340, height: 620, pointerEvents: 'none',
+        backgroundImage: `url('${profile.falImageUrl || 'assets/palmsprings-figure.png'}')`,
+        backgroundSize: profile.falImageUrl ? 'cover' : 'contain',
+        backgroundPosition: profile.falImageUrl ? 'center top' : 'center bottom',
+        backgroundRepeat: 'no-repeat',
+        borderRadius: profile.falImageUrl ? 32 : 0,
+        filter: 'drop-shadow(0 30px 40px rgba(0,0,0,.25))',
+        zIndex: 2,
+      }} />
+
+      <div style={{
+        position: 'absolute', left: '50%', bottom: '14%', transform: 'translateX(-50%)',
+        width: 360, height: 60, borderRadius: '50%',
+        background: 'radial-gradient(closest-side,rgba(251,100,182,.45),transparent)',
+        filter: 'blur(14px)',
+        animation: 'flo-pulse 3s ease-in-out infinite',
+      }} />
+
+      {/* TOP LEFT — now playing */}
+      <div style={{ position: 'absolute', top: 28, left: 28, zIndex: 10 }}>
+        <GlassPanel style={{ padding: '14px 20px 14px 14px', display: 'flex', alignItems: 'center', gap: 14, minWidth: 320 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14,
+            background: 'linear-gradient(135deg,#fb64b6,#ff8904)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 24, boxShadow: '0 6px 14px rgba(251,100,182,.35)',
+          }}>🎵</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: T.sans, fontSize: 10, letterSpacing: '.22em',
+              textTransform: 'uppercase', fontWeight: 700, color: T.cyan, marginBottom: 4 }}>NOW PLAYING</div>
+            <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 15, color: T.text }}>Palm Springs Sunset Set</div>
+            <div style={{ fontFamily: T.sans, fontSize: 12, color: T.muted }}>mixed by DJ Marigold · live</div>
+          </div>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: T.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', cursor: 'pointer', boxShadow: '0 6px 12px rgba(8,145,178,.4)',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6-10 6z"/></svg>
+          </div>
+        </GlassPanel>
+      </div>
+
+      {/* TOP RIGHT — party badge */}
+      <div style={{ position: 'absolute', top: 28, right: 28, zIndex: 10 }}>
+        <GlassPanel style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.danger,
+            boxShadow: '0 0 0 3px rgba(255,99,126,.25)', animation: 'flo-pulse 1.5s infinite' }} />
+          <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 13, color: T.text }}>Palm Springs Rooftop</div>
+          <span style={{ fontFamily: T.sans, fontSize: 12, color: T.muted }}>· 21 here</span>
+        </GlassPanel>
+      </div>
+
+      {/* LEFT RAIL — Attendees */}
+      <div style={{ position: 'absolute', left: 28, top: 130, bottom: 180, zIndex: 10,
+        display: 'flex', flexDirection: 'column' }}>
+        <GlassPanel style={{ padding: 20, width: 240, display: 'flex', flexDirection: 'column', gap: 14,
+          maxHeight: '100%', overflow: 'hidden' }}>
+          <div style={{ fontFamily: T.sans, fontSize: 10, letterSpacing: '.28em', fontWeight: 700,
+            color: T.cyan, textTransform: 'uppercase' }}>ATTENDEES · 21</div>
+          <Attendee name="You" sub="just arrived" me avatarUrl="assets/avatar-sarahlee.png" statusColor={T.pink} />
+          <Attendee name="Ava" sub="host · hyping you up" host avatarUrl="assets/avatar-sarahlee.png" statusColor={T.danger} />
+          <div style={{ height: 1, background: 'rgba(0,0,0,.08)', margin: '4px 0' }} />
+          <Attendee name="Mira"  sub="DJing"        avatarUrl="assets/attendee-1.png" />
+          <Attendee name="Jules" sub="at the pool"  avatarUrl="assets/attendee-2.png" />
+          <Attendee name="Rei"   sub="chatting"     avatarUrl="assets/attendee-3.png" />
+          <Attendee name="Theo"  sub="idle"         avatarUrl="assets/attendee-4.png" statusColor="#c8c8c8" />
+        </GlassPanel>
+      </div>
+
+      {/* RIGHT RAIL — Ava whisper */}
+      <div style={{ position: 'absolute', right: 28, top: 130, width: 320, zIndex: 10 }}>
+        <GlassPanel elevated style={{ padding: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+            <AvaPortrait size={44} talking />
+            <div>
+              <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 14, color: T.cyan }}>Ava</div>
+              <div style={{ fontFamily: T.sans, fontSize: 11, color: T.muted }}>whispers · only you can see</div>
+            </div>
+          </div>
+          <div style={{
+            padding: '12px 14px', borderRadius: '16px 16px 16px 4px',
+            background: 'rgba(255,255,255,.7)',
+            fontFamily: T.sans, fontSize: 14, color: T.text, lineHeight: 1.45,
+          }}>
+            Jules is definitely looking over. Go say hi. I'm not going to tell you twice.
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+            {['👋 wave at Jules', '🎵 request a song', '🥂 grab a drink'].map(s => (
+              <button key={s} style={{
+                padding: '8px 12px', borderRadius: 9999,
+                background: 'rgba(255,255,255,.55)',
+                border: '1px solid rgba(255,255,255,.5)',
+                fontFamily: T.sans, fontWeight: 600, fontSize: 12, color: T.text,
+                cursor: 'pointer', transition: 'transform .15s',
+              }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >{s}</button>
+            ))}
+          </div>
+        </GlassPanel>
+        <button onClick={onRestart} style={{
+          marginTop: 14, width: '100%',
+          padding: '12px 14px', borderRadius: 9999,
+          background: 'rgba(255,255,255,.55)',
+          backdropFilter: 'blur(12px)',
+          border: '1.5px solid rgba(255,255,255,.6)',
+          fontFamily: T.sans, fontSize: 13, fontWeight: 700, color: T.text,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          boxShadow: '0 4px 16px rgba(0,0,0,.1)',
+          transition: 'transform .15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        >↺ Restart the night</button>
+      </div>
+
+      {/* NAV PANELS */}
+      {activePanel === 'music'  && <MusicPanel  onClose={() => setActivePanel(null)} />}
+      {activePanel === 'travel' && <TravelPanel onClose={() => setActivePanel(null)} />}
+      {activePanel === 'create' && <CreatePanel onClose={() => setActivePanel(null)}
+                                    onTweak={onGoCustomize}
+                                    onRestartWithAva={onRestartWithAva} />}
+      {activePanel === 'ask'    && <AskPanel    onClose={() => setActivePanel(null)} />}
+      {activePanel === 'chat'   && <ChatPanel   onClose={() => setActivePanel(null)} />}
+
+      {/* BOTTOM NAV */}
+      <div style={{ position: 'absolute', left: '50%', bottom: 36, transform: 'translateX(-50%)', zIndex: 30 }}>
+        <GlassPanel elevated style={{ padding: '10px 20px', borderRadius: 9999,
+          display: 'flex', alignItems: 'center', gap: 6 }}>
+          {[
+            { id: 'music',  emoji: '🎵', label: 'Music' },
+            { id: 'travel', emoji: '🌍', label: 'Travel' },
+            { id: 'create', emoji: '✨', label: 'Create' },
+            { id: 'ask',    emoji: '🔍', label: 'Ask' },
+            { id: 'chat',   emoji: '💬', label: 'Chat' },
+          ].map(t => (
+            <button key={t.id}
+              onClick={() => setActivePanel(p => p === t.id ? null : t.id)}
+              style={{
+                padding: '10px 18px', borderRadius: 9999, border: 'none',
+                background: activePanel === t.id ? 'rgba(8,145,178,.1)' : 'transparent',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                cursor: 'pointer', transition: 'all .15s', minWidth: 72,
+              }}>
+              <div style={{ fontSize: 22, transition: 'transform .2s',
+                transform: activePanel === t.id ? 'scale(1.15)' : 'scale(1)' }}>{t.emoji}</div>
+              <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 11,
+                color: activePanel === t.id ? T.cyan : T.muted }}>{t.label}</div>
+            </button>
+          ))}
+        </GlassPanel>
+      </div>
+
+      {/* sparkles */}
+      {[...Array(12)].map((_, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${10 + ((i * 73) % 80)}%`,
+          top: `${20 + ((i * 47) % 60)}%`,
+          width: 3, height: 3, borderRadius: '50%',
+          background: ['#fff', '#fb64b6', '#60a5fa'][i % 3],
+          boxShadow: '0 0 6px currentColor',
+          animation: `flo-twinkle ${2 + (i % 3)}s ${(i * 0.2) % 2}s infinite`,
+          pointerEvents: 'none',
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function Attendee({ name, sub, host, me, avatarUrl, statusColor = '#05df72' }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: '50%',
+          border: '2px solid rgba(255,255,255,.7)',
+          boxShadow: '0 0 0 2px rgba(255,255,255,.4)',
+          backgroundImage: `url('${avatarUrl}')`,
+          backgroundSize: 'cover', backgroundPosition: 'center 15%',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -1, right: -1,
+          width: 11, height: 11, borderRadius: '50%',
+          background: statusColor, border: '2px solid #fff',
+        }} />
+      </div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 13,
+            color: me ? T.pink : T.text }}>{name}</div>
+          {host && <span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 9,
+            letterSpacing: '.16em', color: T.danger }}>HOST</span>}
+          {me && <span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 9,
+            letterSpacing: '.16em', color: T.pink }}>YOU</span>}
+        </div>
+        <div style={{ fontFamily: T.sans, fontSize: 11, color: T.muted,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── NAV PANEL SHELL ──────────────────────────────────────────────
+function NavPanel({ title, subtitle, children, onClose, width = 420, height = 580 }) {
+  return (
+    <div style={{
+      position: 'absolute', left: '50%', bottom: 140,
+      transform: 'translateX(-50%)',
+      width, maxHeight: height, zIndex: 20,
+      animation: 'flo-panel-in .4s cubic-bezier(.34,1.56,.64,1) both',
+    }}>
+      <GlassPanel elevated style={{ padding: 0, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', maxHeight: height }}>
+        <div style={{
+          padding: '18px 20px 14px', borderBottom: '1px solid rgba(255,255,255,.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        }}>
+          <div style={{ minWidth: 0 }}>
+            {subtitle ? <div style={{ fontFamily: T.sans, fontSize: 10, letterSpacing: '.28em',
+              fontWeight: 700, color: T.cyan, textTransform: 'uppercase', marginBottom: 2 }}>{subtitle}</div> : null}
+            <div style={{ fontFamily: subtitle ? T.serif : T.sans, fontSize: subtitle ? 22 : 20,
+              fontWeight: subtitle ? 400 : 700, color: subtitle ? T.text : T.cyan,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
+          </div>
+          <button onClick={onClose} style={{
+            width: 32, height: 32, borderRadius: '50%', border: 'none',
+            background: 'rgba(8,145,178,.12)', cursor: 'pointer', fontSize: 16, lineHeight: 1,
+            color: T.cyan, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>✕</button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: 18 }}>{children}</div>
+      </GlassPanel>
+    </div>
+  );
+}
+
+// ─── MUSIC PANEL ──────────────────────────────────────────────────
+function MusicPanel({ onClose }) {
+  const [prompt, setPrompt] = useState('');
+  const [previewing, setPreviewing] = useState(null);
+  const [queue, setQueue] = useState([
+    { id: 'q1', title: 'Palm Springs Sunset Set', artist: 'DJ Marigold',   playing: true },
+    { id: 'q2', title: 'Slow Drip',               artist: 'Peach Pit',     up: true },
+  ]);
+  const [suggestions, setSuggestions] = useState([
+    { id: 's1', title: 'Disco Sky',          artist: 'Rhye ∙ Y2K edit',      mood: '🪩 uptempo' },
+    { id: 's2', title: 'Amber Is The Color', artist: 'Cigarettes After Sex', mood: '🫧 dreamy' },
+    { id: 's3', title: 'Plastic Love',       artist: 'Mariya Takeuchi',      mood: '🌆 city pop' },
+    { id: 's4', title: 'Tropicante',         artist: 'Four Tet',             mood: '🌴 groove' },
+  ]);
+
+  const runPrompt = () => {
+    const t = prompt.trim(); if (!t) return;
+    setSuggestions([
+      { id: 'p-a', title: 'Warm Drift',   artist: `AI mix · ${t}`,   mood: '✨ just for you' },
+      { id: 'p-b', title: 'Golden Hour',  artist: `AI remix · ${t}`, mood: '☀️ sunlit' },
+      { id: 'p-c', title: 'Rooftop Ease', artist: `AI edit · ${t}`,  mood: '🥂 hang' },
+    ]);
+    setPrompt('');
+  };
+
+  const addToQueue = (s) => setQueue(q => [...q, { id: s.id + '-q', title: s.title, artist: s.artist, up: q.length === 0 }]);
+
+  return (
+    <NavPanel title="Music" subtitle="Now playing · Palm Springs" onClose={onClose} height={560}>
+      <div style={{ display: 'flex', gap: 8, padding: 4,
+        background: 'rgba(255,255,255,.55)', border: '1.5px solid rgba(8,145,178,.3)',
+        borderRadius: 9999, marginBottom: 18 }}>
+        <input value={prompt} onChange={e => setPrompt(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && runPrompt()}
+          placeholder="describe a vibe — 'slow, glossy, late-night'"
+          style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent',
+            padding: '10px 14px', fontFamily: T.sans, fontSize: 14, color: T.text }} />
+        <button onClick={runPrompt} disabled={!prompt.trim()} style={{
+          padding: '10px 18px', borderRadius: 9999, border: 'none',
+          background: prompt.trim() ? T.gradient : 'rgba(8,145,178,.2)',
+          color: '#fff', fontFamily: T.sans, fontWeight: 700, fontSize: 13,
+          cursor: prompt.trim() ? 'pointer' : 'default',
+          boxShadow: prompt.trim() ? '0 4px 12px rgba(8,145,178,.4)' : 'none',
+        }}>✨ remix</button>
+      </div>
+
+      <PanelSection>Up next · {queue.length}</PanelSection>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 22 }}>
+        {queue.map((t, i) => (
+          <div key={t.id} style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '10px 12px', borderRadius: 14,
+            background: t.playing ? 'rgba(8,145,178,.08)' : 'rgba(255,255,255,.4)',
+            border: t.playing ? '1px solid rgba(8,145,178,.2)' : '1px solid rgba(255,255,255,.3)',
+          }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10,
+              background: t.playing ? T.gradient : T.warmGradient,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12 }}>
+              {t.playing ? <Equalizer /> : i}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: T.sans, fontWeight: 600, fontSize: 13, color: T.text,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
+              <div style={{ fontFamily: T.sans, fontSize: 11, color: T.muted,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.artist}</div>
+            </div>
+            {t.playing && <div style={{ fontFamily: T.sans, fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: T.cyan }}>NOW</div>}
+            {t.up && <div style={{ fontFamily: T.sans, fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: T.pink }}>NEXT</div>}
+          </div>
+        ))}
+      </div>
+
+      <PanelSection>Suggestions</PanelSection>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {suggestions.map(s => (
+          <div key={s.id} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 12px', borderRadius: 14,
+            background: 'rgba(255,255,255,.45)', border: '1px solid rgba(255,255,255,.4)',
+          }}>
+            <button onClick={() => setPreviewing(p => p === s.id ? null : s.id)} style={{
+              width: 32, height: 32, borderRadius: '50%', border: 'none',
+              background: previewing === s.id ? T.pink : 'rgba(255,255,255,.7)',
+              color: previewing === s.id ? '#fff' : T.cyan,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {previewing === s.id
+                ? <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="3" height="8"/><rect x="6" y="1" width="3" height="8"/></svg>
+                : <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M1 0l9 5-9 5z"/></svg>}
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: T.sans, fontWeight: 600, fontSize: 13, color: T.text,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</div>
+              <div style={{ fontFamily: T.sans, fontSize: 11, color: T.muted }}>
+                {s.artist} · <span style={{ color: T.pink }}>{s.mood}</span>
+              </div>
+              {previewing === s.id && (
+                <div style={{ height: 3, marginTop: 6, background: 'rgba(0,0,0,.06)', borderRadius: 9999, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: T.warmGradient, animation: 'flo-preview 20s linear forwards' }} />
+                </div>
+              )}
+            </div>
+            <button onClick={() => addToQueue(s)} style={{
+              padding: '7px 12px', borderRadius: 9999, border: 'none',
+              background: T.gradient, color: '#fff',
+              fontFamily: T.sans, fontWeight: 700, fontSize: 11,
+              cursor: 'pointer', boxShadow: '0 4px 10px rgba(8,145,178,.3)', flexShrink: 0,
+            }}>+ queue</button>
+          </div>
+        ))}
+      </div>
+    </NavPanel>
+  );
+}
+
+function Equalizer() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 12 }}>
+      {[0,1,2].map(i => (
+        <div key={i} style={{
+          width: 3, background: '#fff', borderRadius: 2,
+          animation: `eq-bounce 0.8s ${i * 0.15}s ease-in-out infinite alternate`,
+          height: '40%',
+        }} />
+      ))}
+    </div>
+  );
+}
+
+// ─── TRAVEL PANEL ─────────────────────────────────────────────────
+function TravelPanel({ onClose }) {
+  const parties = [
+    { id: 'palm-springs', emoji: '🌴', name: 'Palm Springs Party',  sub: 'Desert Oasis',      tag: 'Sunset Vibes',  attendees: 8,   live: true  },
+    { id: 'tokyo',        emoji: '🗼', name: 'Tokyo Nights',         sub: 'Neon District',     tag: 'Cyberpunk',     countdown: 'Starts in 2 hours' },
+    { id: 'beach',        emoji: '🏖️', name: 'Beach House',          sub: 'Tropical Paradise', tag: 'Chill Waves',   countdown: 'Starts at 8:00 PM' },
+    { id: 'mountain',     emoji: '⛰️', name: 'Mountain Retreat',     sub: 'Alpine Lodge',      tag: 'Cozy Vibes',    countdown: 'Starts tomorrow'   },
+    { id: 'space',        emoji: '🚀', name: 'Space Station',        sub: 'Orbit',             tag: 'Zero Gravity',  countdown: 'Starts in 30 min'  },
+  ];
+
+  return (
+    <NavPanel title="🌍 Travel to Party" subtitle="" onClose={onClose} width={500} height={700}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: '-4px 0' }}>
+        {parties.map(p => (
+          <div key={p.id} style={{
+            background: 'rgba(255,255,255,.25)',
+            border: '2px solid transparent',
+            borderRadius: 16, padding: '18px 18px 2px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingBottom: 16 }}>
+              {/* emoji icon */}
+              <div style={{ fontSize: 48, lineHeight: 1, flexShrink: 0, width: 48, textAlign: 'center' }}>{p.emoji}</div>
+
+              {/* info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 18, color: T.cyan, marginBottom: 4, whiteSpace: 'nowrap' }}>{p.name}</div>
+                <div style={{ fontFamily: T.sans, fontSize: 14, color: T.muted, marginBottom: 8 }}>{p.sub}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    padding: '4px 10px', borderRadius: 9999,
+                    background: 'rgba(8,145,178,.18)',
+                    fontFamily: T.sans, fontWeight: 700, fontSize: 10,
+                    color: T.cyan, letterSpacing: '.1em',
+                  }}>{p.tag}</span>
+                  {p.live
+                    ? <span style={{ fontFamily: T.sans, fontSize: 12, color: T.muted }}>👥 {p.attendees} online</span>
+                    : <span style={{ fontFamily: T.sans, fontSize: 12, color: T.muted }}>🕐 {p.countdown}</span>
+                  }
+                </div>
+              </div>
+
+              {/* action */}
+              {p.live ? (
+                <button style={{
+                  padding: '8px 18px', borderRadius: 9999, border: 'none', flexShrink: 0,
+                  background: T.warmGradient, color: '#fff',
+                  fontFamily: T.sans, fontWeight: 700, fontSize: 12,
+                  cursor: 'pointer', boxShadow: '0 4px 12px rgba(251,100,182,.4)',
+                }}>Join →</button>
+              ) : (
+                <button style={{
+                  padding: '9px 16px', borderRadius: 9999, flexShrink: 0,
+                  border: `2px solid rgba(8,145,178,.3)`,
+                  background: 'rgba(255,255,255,.5)', color: T.cyan,
+                  fontFamily: T.sans, fontWeight: 700, fontSize: 12, cursor: 'pointer',
+                }}>Remind Me</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </NavPanel>
+  );
+}
+
+// ─── ASK PANEL ────────────────────────────────────────────────────
+function AskPanel({ onClose }) {
+  const [msgs, setMsgs] = useState([
+    { from: 'ava', text: "Hi! I'm here to help you find your way. Ask me anything about the party, friends, or features!" },
+  ]);
+  const [draft, setDraft] = useState('');
+  const scrollRef = useRef(null);
+  const quick = ["How do I change my avatar?","What music is playing?","How do I teleport?","Who's here?"];
+  const reply = (q) => ({
+    "How do I change my avatar?": "Tap ✨ Create in the bottom nav — you'll land right back in the dressing room. Tone, aura, accessories. Go wild.",
+    "What music is playing?":     "DJ Marigold's Palm Springs Sunset Set. Tap 🎵 Music to preview other tracks or queue something weird.",
+    "How do I teleport?":         "🌍 Travel shows every live party. Tap one, and you'll arrive in about two seconds.",
+    "Who's here?":                "21 people, all lovely. Jules is by the pool. Mira's DJing. You keep scanning — you're safe.",
+  }[q] || "Hmm — I don't have a good answer for that one. But I'll figure it out. Ask me something else?");
+
+  const send = (text) => {
+    if (!text.trim()) return;
+    setMsgs(m => [...m, { from: 'me', text }]);
+    setDraft('');
+    setTimeout(() => setMsgs(m => [...m, { from: 'ava', text: reply(text) }]), 700);
+  };
+
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [msgs]);
+
+  return (
+    <NavPanel title="Ask Ava" subtitle="your party assistant" onClose={onClose} height={580}>
+      <div ref={scrollRef} style={{ display: 'flex', flexDirection: 'column', gap: 10,
+        marginBottom: 14, maxHeight: 290, overflowY: 'auto' }}>
+        {msgs.map((m, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, justifyContent: m.from === 'me' ? 'flex-end' : 'flex-start' }}>
+            {m.from === 'ava' && <AvaPortrait size={28} />}
+            <div style={{
+              padding: '10px 14px', maxWidth: 280,
+              borderRadius: m.from === 'me' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+              background: m.from === 'me' ? T.gradient : 'rgba(255,255,255,.65)',
+              color: m.from === 'me' ? '#fff' : T.text,
+              fontFamily: T.sans, fontSize: 13, lineHeight: 1.45, fontWeight: 500,
+            }}>{m.text}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontFamily: T.sans, fontSize: 10, fontWeight: 700,
+        letterSpacing: '.28em', color: T.cyan, marginBottom: 10 }}>QUICK QUESTIONS</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+        {quick.map(q => (
+          <button key={q} onClick={() => send(q)} style={{
+            padding: '8px 12px', borderRadius: 9999,
+            background: 'rgba(255,255,255,.55)', border: '1px solid rgba(255,255,255,.5)',
+            fontFamily: T.sans, fontWeight: 600, fontSize: 12, color: T.text, cursor: 'pointer',
+          }}>{q}</button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 6, padding: 4,
+        background: 'rgba(255,255,255,.5)', border: '1px solid rgba(255,255,255,.5)', borderRadius: 9999 }}>
+        <input value={draft} onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && send(draft)}
+          placeholder="Type a message..."
+          style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent',
+            padding: '9px 14px', fontFamily: T.sans, fontSize: 13, color: T.text }} />
+        <button onClick={() => send(draft)} style={{
+          padding: '0 18px', borderRadius: 9999, border: 'none',
+          background: T.warmGradient, color: '#fff',
+          fontFamily: T.sans, fontWeight: 700, fontSize: 12, cursor: 'pointer',
+          boxShadow: '0 4px 10px rgba(251,100,182,.4)',
+        }}>Send</button>
+      </div>
+    </NavPanel>
+  );
+}
+
+// ─── CHAT PANEL ───────────────────────────────────────────────────
+function ChatPanel({ onClose }) {
+  const [openThread, setOpenThread] = useState(null);
+  const [threads, setThreads] = useState([
+    { id: 'room',  name: 'PARTY ROOM', sub: 'Harvey: Love this song!', time: '2m', unread: 3,
+      group: true, avatar: 'assets/attendee-1.png', status: T.success, nameColor: '#4193a7',
+      msgs: [{ from: 'Mira', text: "anyone else obsessed w this set" }, { from: 'Jules', text: "100%. asking DJ for the tracklist" }, { from: 'Harvey', text: "Love this song!" }] },
+    { id: 'ava',   name: 'Ava', sub: "I'm watching you scan the room", time: 'now', unread: 1,
+      avatar: 'assets/avatar-sarahlee.png', status: T.success, host: true,
+      msgs: [{ from: 'Ava', text: "hey. stop pretending you're not here." }, { from: 'Ava', text: "jules is by the pool. go." }] },
+    { id: 'jules', name: 'Jules', sub: 'hey! welcome 👋', time: '5m',
+      avatar: 'assets/attendee-2.png', status: T.success,
+      msgs: [{ from: 'Jules', text: "hey! welcome 👋" }, { from: 'Jules', text: "love the fit" }] },
+    { id: 'mira',  name: 'Mira', sub: 'take a song request?', time: '18m',
+      avatar: 'assets/attendee-1.png', status: T.success,
+      msgs: [{ from: 'Mira', text: "take a song request?" }] },
+    { id: 'theo',  name: 'Theo', sub: 'brb grabbing a drink', time: '1h',
+      avatar: 'assets/attendee-4.png', status: '#c8c8c8',
+      msgs: [{ from: 'Theo', text: "brb grabbing a drink" }] },
+  ]);
+  const [draft, setDraft] = useState('');
+  const scrollRef = useRef(null);
+  const current = openThread ? threads.find(t => t.id === openThread) : null;
+
+  const send = () => {
+    const t = draft.trim(); if (!t || !current) return;
+    setThreads(prev => prev.map(th => th.id === current.id
+      ? { ...th, msgs: [...th.msgs, { from: 'me', text: t }], sub: `You: ${t}`, time: 'now' } : th));
+    setDraft('');
+    if (current.id === 'ava') {
+      setTimeout(() => setThreads(prev => prev.map(th => th.id === 'ava'
+        ? { ...th, msgs: [...th.msgs, { from: 'Ava', text: 'good. go.' }] } : th)), 800);
+    } else if (current.id !== 'room') {
+      setTimeout(() => setThreads(prev => prev.map(th => th.id === current.id
+        ? { ...th, msgs: [...th.msgs, { from: current.name, text: ['haha', 'omg same', 'be right there'][Math.floor(Math.random()*3)] }] } : th)), 900);
+    }
+  };
+
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [current?.msgs]);
+
+  return (
+    <NavPanel
+      title={current ? current.name : "Messages"}
+      subtitle={current ? (current.group ? 'group · 4 members' : 'direct') : '5 conversations · 4 unread'}
+      onClose={onClose} width={420} height={620}
+    >
+      {!current && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, margin: '-6px 0' }}>
+          {threads.map(th => (
+            <button key={th.id} onClick={() => setOpenThread(th.id)} style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: 10,
+              borderRadius: 14, background: 'transparent', border: 'none',
+              cursor: 'pointer', textAlign: 'left', transition: 'background .15s',
+            }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.4)'}
+               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%',
+                  backgroundImage: `url('${th.avatar}')`, backgroundSize: 'cover', backgroundPosition: 'center 15%',
+                  border: '2px solid rgba(255,255,255,.7)', boxShadow: '0 0 0 2px rgba(255,255,255,.4)' }} />
+                <div style={{ position: 'absolute', bottom: 0, right: 0,
+                  width: 14, height: 14, borderRadius: '50%', background: th.status, border: '2px solid #fff' }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 15,
+                    color: th.nameColor || T.text }}>{th.name}</div>
+                  {th.host && <span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 9,
+                    letterSpacing: '.16em', color: T.danger }}>HOST</span>}
+                  <div style={{ marginLeft: 'auto', fontFamily: T.sans, fontSize: 10, color: T.muted }}>{th.time}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <div style={{ flex: 1, fontFamily: T.sans, fontSize: 13, color: T.muted,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{th.sub}</div>
+                  {th.unread > 0 && (
+                    <div style={{ minWidth: 22, height: 22, padding: '0 7px', borderRadius: 9999,
+                      background: T.warmGradient, color: '#fff',
+                      fontFamily: T.sans, fontWeight: 700, fontSize: 11,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>{th.unread}</div>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {current && (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <button onClick={() => setOpenThread(null)} style={{
+            padding: '6px 10px', marginBottom: 10, alignSelf: 'flex-start',
+            background: 'rgba(255,255,255,.5)', border: '1px solid rgba(255,255,255,.5)',
+            borderRadius: 9999, fontFamily: T.sans, fontSize: 11, fontWeight: 600, color: T.cyan, cursor: 'pointer',
+          }}>← all messages</button>
+          <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto',
+            display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 10,
+            minHeight: 200, maxHeight: 340 }}>
+            {current.msgs.map((m, i) => {
+              const mine = m.from === 'me';
+              return (
+                <div key={i} style={{ display: 'flex', gap: 8, justifyContent: mine ? 'flex-end' : 'flex-start' }}>
+                  <div style={{
+                    padding: '9px 13px', maxWidth: 260,
+                    borderRadius: mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                    background: mine ? T.gradient : 'rgba(255,255,255,.7)',
+                    color: mine ? '#fff' : T.text,
+                    fontFamily: T.sans, fontSize: 13.5, lineHeight: 1.4, fontWeight: 500,
+                    boxShadow: mine ? '0 6px 14px rgba(8,145,178,.2)' : '0 1px 3px rgba(0,0,0,.04)',
+                  }}>
+                    {!mine && current.group && (
+                      <div style={{ fontFamily: T.sans, fontSize: 10, fontWeight: 700, color: T.pink, marginBottom: 3 }}>{m.from}</div>
+                    )}
+                    {m.text}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginTop: 8, padding: 4,
+            background: 'rgba(255,255,255,.5)', border: '1px solid rgba(255,255,255,.5)', borderRadius: 9999 }}>
+            <input value={draft} onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && send()}
+              placeholder="iMessage…"
+              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent',
+                padding: '9px 14px', fontFamily: T.sans, fontSize: 13.5, color: T.text }} />
+            <button onClick={send} disabled={!draft.trim()} style={{
+              width: 36, height: 36, borderRadius: '50%', border: 'none',
+              background: draft.trim() ? T.gradient : 'rgba(8,145,178,.2)',
+              color: '#fff', cursor: draft.trim() ? 'pointer' : 'default',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>↑</button>
+          </div>
+        </div>
+      )}
+    </NavPanel>
+  );
+}
+
+// ─── CREATE PANEL ─────────────────────────────────────────────────
+function CreatePanel({ onClose, onTweak, onRestartWithAva }) {
+  return (
+    <NavPanel title="New look" subtitle="✨ CREATE" onClose={onClose} width={400} height="auto">
+      <div style={{ padding: '8px 0 4px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+        {/* Option A — Tweak */}
+        <button onClick={() => { onClose(); onTweak(); }} style={{
+          display: 'flex', alignItems: 'center', gap: 16,
+          padding: '18px 20px', borderRadius: 20, border: 'none',
+          background: 'linear-gradient(135deg,rgba(8,145,178,.12),rgba(96,165,250,.1))',
+          cursor: 'pointer', textAlign: 'left', width: '100%',
+          transition: 'all .2s', borderTop: '1px solid rgba(8,145,178,.15)',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(135deg,rgba(8,145,178,.22),rgba(96,165,250,.18)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(135deg,rgba(8,145,178,.12),rgba(96,165,250,.1))'}
+        >
+          <div style={{
+            width: 48, height: 48, borderRadius: 16, flexShrink: 0,
+            background: 'linear-gradient(135deg,#0891b2,#60a5fa)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, boxShadow: '0 6px 14px rgba(8,145,178,.35)',
+          }}>🪞</div>
+          <div>
+            <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 15, color: T.text, marginBottom: 3 }}>
+              Tweak your look
+            </div>
+            <div style={{ fontFamily: T.sans, fontSize: 13, color: T.muted, lineHeight: 1.4 }}>
+              Change hair, skin, or add a custom prompt — Ava regenerates your avatar.
+            </div>
+          </div>
+          <div style={{ marginLeft: 'auto', fontSize: 18, color: T.cyan, flexShrink: 0 }}>→</div>
+        </button>
+
+        {/* Option B — Restart chat */}
+        <button onClick={() => { onClose(); onRestartWithAva(); }} style={{
+          display: 'flex', alignItems: 'center', gap: 16,
+          padding: '18px 20px', borderRadius: 20, border: 'none',
+          background: 'linear-gradient(135deg,rgba(251,100,182,.12),rgba(255,137,4,.08))',
+          cursor: 'pointer', textAlign: 'left', width: '100%',
+          transition: 'all .2s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(135deg,rgba(251,100,182,.22),rgba(255,137,4,.15))'}
+        onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(135deg,rgba(251,100,182,.12),rgba(255,137,4,.08))'}
+        >
+          <div style={{
+            width: 48, height: 48, borderRadius: 16, flexShrink: 0,
+            background: 'linear-gradient(135deg,#fb64b6,#ff8904)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, boxShadow: '0 6px 14px rgba(251,100,182,.35)',
+          }}>✦</div>
+          <div>
+            <div style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 15, color: T.text, marginBottom: 3 }}>
+              Start fresh with Ava
+            </div>
+            <div style={{ fontFamily: T.sans, fontSize: 13, color: T.muted, lineHeight: 1.4 }}>
+              Answer Ava's questions again and get a completely new look.
+            </div>
+          </div>
+          <div style={{ marginLeft: 'auto', fontSize: 18, color: T.pink, flexShrink: 0 }}>→</div>
+        </button>
+
+      </div>
+    </NavPanel>
+  );
+}
+
+function PanelSection({ children }) {
+  return (
+    <div style={{ fontFamily: T.sans, fontSize: 10, letterSpacing: '.28em',
+      fontWeight: 700, color: T.cyan, textTransform: 'uppercase', marginBottom: 10 }}>{children}</div>
+  );
+}
+
+// ─── SCENE JUMPER ─────────────────────────────────────────────────
+const SCENES = ['welcome','chat','generate','customize','arrival','party'];
+
+function SceneJumper({ scene, onJump }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ position: 'fixed', top: 14, right: 14, zIndex: 9999, fontFamily: T.sans }}>
+      <button onClick={() => setOpen(o => !o)} style={{
+        padding: '7px 12px', borderRadius: 9999,
+        background: 'rgba(0,0,0,.4)', color: 'rgba(255,255,255,.8)',
+        border: '1px solid rgba(255,255,255,.15)',
+        fontSize: 11, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase',
+        cursor: 'pointer', backdropFilter: 'blur(12px)',
+      }}>⎋ {scene}</button>
+      {open && (
+        <div style={{
+          marginTop: 8, padding: 8,
+          background: 'rgba(10,10,20,.85)', backdropFilter: 'blur(16px)',
+          borderRadius: 14, border: '1px solid rgba(255,255,255,.12)',
+          display: 'flex', flexDirection: 'column', gap: 4, minWidth: 160,
+        }}>
+          {SCENES.map((s, i) => (
+            <button key={s} onClick={() => { onJump(s); setOpen(false); }} style={{
+              padding: '8px 12px', textAlign: 'left', border: 'none', borderRadius: 9,
+              background: s === scene ? 'rgba(8,145,178,.3)' : 'transparent',
+              color: s === scene ? '#fff' : 'rgba(255,255,255,.7)',
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <span style={{ fontSize: 10, opacity: .5, width: 14 }}>{i+1}.</span>{s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────
+function App() {
+  const [scene, setScene] = useState(() => {
+    if (window.SKIP_TO) return window.SKIP_TO;
+    try { return localStorage.getItem('avakin:scene') || 'welcome'; } catch { return 'welcome'; }
+  });
+  const [profile, setProfile] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('avakin:profile') || '{}'); } catch { return {}; }
+  });
+
+  useEffect(() => { try { localStorage.setItem('avakin:scene', scene); } catch {} }, [scene]);
+  useEffect(() => { try { localStorage.setItem('avakin:profile', JSON.stringify(profile)); } catch {} }, [profile]);
+
+  // Track which scene to return to when leaving customize
+  const customizeBackRef = useRef('generate');
+
+  const goCustomize = (backTo = 'generate') => {
+    customizeBackRef.current = backTo;
+    setScene('customize');
+  };
+
+  const go = (s) => setScene(s);
+
+  return (
+    <div className="scene-stack" data-scene={scene}>
+      {scene === 'welcome'   && <WelcomeScene  onEnter={() => go('chat')} />}
+      {scene === 'chat'      && <ChatScene     onComplete={(p) => { setProfile(p); go('generate'); }} />}
+      {scene === 'generate'  && <GenerateScene profile={profile} onReveal={(choice, falImageUrl) => { if (falImageUrl) setProfile(p => ({ ...p, falImageUrl })); go(choice === 'edit' ? 'customize' : 'arrival'); }} />}
+      {scene === 'customize' && <CustomizeScene profile={profile}
+        onBack={() => go(customizeBackRef.current)}
+        onDone={(newUrl) => {
+          if (newUrl) setProfile(p => ({...p, falImageUrl: newUrl}));
+          // After tweaking from party, go straight back; otherwise pass through arrival
+          go(customizeBackRef.current === 'party' ? 'party' : 'arrival');
+        }} />}
+      {scene === 'arrival'   && <ArrivalScene  onArrived={() => go('party')} />}
+      {scene === 'party'     && <PartyScene    profile={profile}
+        onRestart={() => {
+          try { localStorage.removeItem('avakin:scene'); localStorage.removeItem('avakin:profile'); } catch {}
+          setProfile({}); go('welcome');
+        }}
+        onGoCustomize={() => goCustomize('party')}
+        onRestartWithAva={() => {
+          try { localStorage.removeItem('avakin:scene'); localStorage.removeItem('avakin:profile'); } catch {}
+          setProfile({}); go('chat');
+        }}
+      />}
+      <SceneJumper scene={scene} onJump={go} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
