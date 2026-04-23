@@ -194,7 +194,40 @@ async function generateFalAvatar(profile, customPrompt = '') {
   });
   if (!res.ok) return null;
   const data = await res.json();
-  return data.images?.[0]?.url ?? null;
+  const url = data.images?.[0]?.url ?? null;
+  return url ? { url, prompt } : null;
+}
+
+// ─── SESSION SAVING ───────────────────────────────────────────────
+async function saveSession(profile, falImageUrl) {
+  try {
+    await fetch('/.netlify/functions/save-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId:   crypto.randomUUID(),
+        timestamp:   new Date().toISOString(),
+        name:        profile.name        || '',
+        identity:    profile.identity    || '',
+        song:        profile.song        || '',
+        era:         profile.era         || '',
+        feel:        profile.feel        || '',
+        presents:    profile.presents    || '',
+        hair:        profile.hair        || '',
+        eyes:        profile.eyes        || '',
+        falImageUrl: falImageUrl         || '',
+        prompt:      prompt              || '',
+      }),
+    });
+  } catch (e) {
+    // fire-and-forget — never block the UI
+    console.warn('Session save failed:', e);
+  }
+}
+
+async function saveSessionFromResult(profile, result) {
+  if (!result) return;
+  await saveSession(profile, result.url, result.prompt);
 }
 
 // ─── PRIMITIVES ───────────────────────────────────────────────────
@@ -785,8 +818,11 @@ function GenerateScene({ profile, onReveal }) {
     let cancelled = false;
     const iv = setInterval(() => setMsgIdx(i => Math.min(i + 1, msgs.length - 1)), 1200);
 
-    generateFalAvatar(profile).then(url => {
-      if (!cancelled && url) setFalImageUrl(url);
+    generateFalAvatar(profile).then(result => {
+      if (!cancelled && result) {
+        setFalImageUrl(result.url);
+        saveSessionFromResult(profile, result); // fire-and-forget
+      }
     });
 
     const t = setTimeout(() => { clearInterval(iv); setPhase(1); }, 5400);
@@ -974,9 +1010,9 @@ function CustomizeScene({ profile, onDone, onBack }) {
   const handleDone = async () => {
     if (!customPrompt.trim()) { onDone(null); return; }
     setGenerating(true);
-    const url = await generateFalAvatar(profile, customPrompt.trim());
+    const result = await generateFalAvatar(profile, customPrompt.trim());
     setGenerating(false);
-    onDone(url);
+    onDone(result ? result.url : null);
   };
 
   return (
@@ -2000,7 +2036,7 @@ function SceneJumper({ scene, onJump }) {
 function App() {
   const [scene, setScene] = useState(() => {
     if (window.SKIP_TO) return window.SKIP_TO;
-    try { return localStorage.getItem('avakin:scene') || 'chat'; } catch { return 'chat'; }
+    try { const s = localStorage.getItem('avakin:scene'); return (s && s !== 'welcome') ? s : 'chat'; } catch { return 'chat'; }
   });
   const [profile, setProfile] = useState(() => {
     try { return JSON.parse(localStorage.getItem('avakin:profile') || '{}'); } catch { return {}; }
