@@ -65,6 +65,21 @@ window.QUESTIONS = [
     placeholder: 'a song, an artist, a vibe',
   },
   {
+    id: 'scene',
+    kind: 'choice',
+    ava: () => [
+      "I can picture it already.",
+      "Where does this version of you belong tonight?",
+    ],
+    options: [
+      { v: 'rooftop luxury',          emoji: '🌆' },
+      { v: 'VIP nightlife',           emoji: '🥂' },
+      { v: 'high-fashion editorial',  emoji: '📸' },
+      { v: 'festival energy',         emoji: '✨' },
+    ],
+    writeIn: 'somewhere else entirely',
+  },
+  {
     id: 'era',
     kind: 'choice',
     ava: () => [
